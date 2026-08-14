@@ -3,6 +3,9 @@ export type MatchStatus = 'SCHEDULED' | 'LIVE' | 'COMPLETED' | 'CANCELLED';
 export interface Match {
   id: string;
   sport: string;
+  sportId?: string;
+  sportName?: string;
+  matchCode?: string;
   teamA: {
     id: string;
     name: string;
@@ -18,6 +21,8 @@ export interface Match {
   venue?: string;
   winnerId?: string;
   scorerId?: string;
+  scorerName?: string;
+  scorerEmail?: string;
   createdAt?: string;
   updatedAt?: string;
 }

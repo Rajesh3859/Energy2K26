@@ -7,6 +7,7 @@ export interface Team {
   captainId?: string;
   teamName?: string;
   teamCode?: string;
+  sportId?: string;
   sportName?: string;
   schoolName?: string;
   location?: string;
@@ -14,4 +15,3 @@ export interface Team {
   createdAt?: string;
   updatedAt?: string;
 }
-

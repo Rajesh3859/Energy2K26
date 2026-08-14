@@ -1,15 +1,100 @@
-import { apiRequest } from '../lib/api';
-import { LiveScoreUpdate } from '../types/liveScore';
+import { apiRequest } from "@/lib/api";
 
-export const liveScoreService = {
-  async getLiveScores(): Promise<LiveScoreUpdate[]> {
-    return apiRequest('/api/live-score');
-  },
+export interface FootballEventPayload {
+  type: "goal" | "yellow_card" | "red_card" | "substitution";
+  teamId: string;
+  minute: number;
+  playerName?: string;
+  description?: string;
+}
 
-  async updateLiveScore(matchId: string, data: Partial<LiveScoreUpdate>): Promise<LiveScoreUpdate> {
-    return apiRequest(`/api/live-score/${matchId}`, {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
-  },
-};
+export interface LiveMatchData {
+  matchId: string;
+  status: "not_started" | "live" | "half_time" | "full_time" | "completed" | "cancelled" | "postponed";
+  half?: number;
+  firstHalfStartedAt?: number;
+  secondHalfStartedAt?: number;
+  endedAt?: number;
+  completedAt?: number;
+  teamA?: {
+    teamId: string;
+    teamName: string;
+    score: number;
+  };
+  teamB?: {
+    teamId: string;
+    teamName: string;
+    score: number;
+  };
+  scoreTeamA?: number;
+  scoreTeamB?: number;
+  events?: Record<string, {
+    id: string;
+    type: string;
+    teamId: string;
+    minute: number;
+    playerName?: string;
+    description?: string;
+  }> | Array<any>;
+  updatedAt?: string | number;
+}
+
+export async function getLiveScore(
+  matchId: string
+): Promise<{ success?: boolean; data: LiveMatchData | null }> {
+  try {
+    return await apiRequest(`/live-matches/${matchId}`);
+  } catch (err: any) {
+    if (err?.message?.includes("Live match not found") || err?.message?.includes("404")) {
+      return { success: false, data: null };
+    }
+    throw err;
+  }
+}
+
+export async function initializeLiveMatch(matchId: string): Promise<{ success?: boolean; data: LiveMatchData }> {
+  return apiRequest(`/live-matches/${matchId}/initialize`, {
+    method: "POST",
+  });
+}
+
+export async function startLiveMatch(matchId: string): Promise<{ success?: boolean; data: LiveMatchData }> {
+  return apiRequest(`/live-matches/${matchId}/start`, {
+    method: "POST",
+  });
+}
+
+export async function createFootballEvent(
+  matchId: string,
+  eventData: FootballEventPayload
+): Promise<{ success?: boolean; data: any }> {
+  return apiRequest(`/live-matches/${matchId}/events`, {
+    method: "POST",
+    body: JSON.stringify(eventData),
+  });
+}
+
+export async function updateLiveMatchStatus(
+  matchId: string,
+  status: LiveMatchData["status"]
+): Promise<{ success?: boolean; data: LiveMatchData }> {
+  return apiRequest(`/live-matches/${matchId}/status`, {
+    method: "PATCH",
+    body: JSON.stringify({ status }),
+  });
+}
+
+export async function deleteFootballEvent(
+  matchId: string,
+  eventId: string
+): Promise<{ success?: boolean; message?: string }> {
+  return apiRequest(`/live-matches/${matchId}/events/${eventId}`, {
+    method: "DELETE",
+  });
+}
+
+export async function completeMatch(matchId: string): Promise<{ success?: boolean; data: LiveMatchData }> {
+  return apiRequest(`/live-matches/${matchId}/complete`, {
+    method: "POST",
+  });
+}

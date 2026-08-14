@@ -25,28 +25,46 @@ export async function apiRequest(
   options: RequestInit = {}
 ) {
   const user = await getAuthenticatedUser();
-
-  if (!user) {
-    throw new Error("User is not authenticated");
-  }
-
-  const token = await user.getIdToken();
+  const token = user ? await user.getIdToken().catch(() => null) : null;
 
   let formattedEndpoint = endpoint.startsWith("/") ? endpoint : `/${endpoint}`;
-
   const baseUrl = API_URL.replace(/\/$/, "");
+
   if ((baseUrl.endsWith("/api/v1") || baseUrl.endsWith("/api")) && formattedEndpoint.startsWith("/api/")) {
     formattedEndpoint = formattedEndpoint.substring(4); // Remove leading '/api'
   }
 
-  const response = await fetch(`${baseUrl}${formattedEndpoint}`, {
-    ...options,
-    headers: {
+  const makeFetch = async (targetBaseUrl: string) => {
+    const headers: Record<string, string> = {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-      ...(options.headers || {}),
-    },
-  });
+      ...(options.headers as Record<string, string> || {}),
+    };
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
+    }
+
+    return fetch(`${targetBaseUrl}${formattedEndpoint}`, {
+      ...options,
+      headers,
+    });
+  };
+
+  let response: Response;
+
+  try {
+    response = await makeFetch(baseUrl);
+  } catch (err: any) {
+    if (err instanceof TypeError && err.message === "Failed to fetch" && baseUrl.includes("localhost")) {
+      const fallbackBaseUrl = baseUrl.replace("localhost", "127.0.0.1");
+      try {
+        response = await makeFetch(fallbackBaseUrl);
+      } catch (fallbackErr) {
+        throw new Error("Backend server connection offline. Please verify the Express backend is running at http://127.0.0.1:5000.");
+      }
+    } else {
+      throw err;
+    }
+  }
 
   const contentType = response.headers.get("content-type");
   let data: any;
