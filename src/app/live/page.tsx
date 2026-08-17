@@ -7,8 +7,7 @@ import MatchCard from "@/components/cards/MatchCard";
 import LoadingSpinner from "@/components/common/LoadingSpinner";
 import ErrorAlert from "@/components/common/ErrorAlert";
 import Modal from "@/components/common/Modal";
-import { rtdb } from "@/lib/firebase";
-import { ref, onValue, get } from "firebase/database";
+import { subscribeToAllLiveMatches, subscribeToLiveMatch } from "@/services/liveMatchRealtime";
 
 export default function LivePage() {
   const [liveMatches, setLiveMatches] = useState<any[]>([]);
@@ -28,48 +27,17 @@ export default function LivePage() {
     setLiveMatches(list);
   }
 
-  // Google-Style Realtime Database Listener + 1-Second High-Frequency Ticker
+  // Pure Firebase Realtime Listener (Zero Polling)
   useEffect(() => {
     fetchMatchesHttp();
 
-    // 1-Second High Frequency Sync Loop
-    const ticker = setInterval(async () => {
-      try {
-        const liveMatchesRef = ref(rtdb, "liveMatches");
-        const snap = await get(liveMatchesRef);
-        if (snap.exists()) {
-          parseMatches(snap.val());
-        }
-      } catch (e) {}
-    }, 1000);
-
-    let unsubscribe: () => void = () => {};
-
-    try {
-      const liveMatchesRef = ref(rtdb, "liveMatches");
-      unsubscribe = onValue(
-        liveMatchesRef,
-        (snapshot) => {
-          if (snapshot.exists()) {
-            parseMatches(snapshot.val());
-          } else {
-            setLiveMatches([]);
-          }
-          setLoading(false);
-          setError("");
-        },
-        (err) => {
-          console.error("Realtime database error, falling back to HTTP", err);
-          fetchMatchesHttp();
-        }
-      );
-    } catch (err) {
-      console.error("Realtime listener init error", err);
-      fetchMatchesHttp();
-    }
+    const unsubscribe = subscribeToAllLiveMatches((dataObj) => {
+      parseMatches(dataObj);
+      setLoading(false);
+      setError("");
+    });
 
     return () => {
-      clearInterval(ticker);
       unsubscribe();
     };
   }, []);
@@ -80,20 +48,15 @@ export default function LivePage() {
     const matchId = selectedMatch.matchId || selectedMatch.id;
     if (!matchId) return;
 
-    let unsubscribe: () => void = () => {};
+    const unsubscribe = subscribeToLiveMatch(matchId, (data) => {
+      if (data) {
+        setSelectedMatch(data);
+      }
+    });
 
-    try {
-      const matchRef = ref(rtdb, `liveMatches/${matchId}`);
-      unsubscribe = onValue(matchRef, (snapshot) => {
-        if (snapshot.exists()) {
-          setSelectedMatch(snapshot.val());
-        }
-      });
-    } catch (err) {
-      console.error("Match detail listener error", err);
-    }
-
-    return () => unsubscribe();
+    return () => {
+      unsubscribe();
+    };
   }, [selectedMatch?.matchId, selectedMatch?.id]);
 
   async function fetchMatchesHttp() {
@@ -244,24 +207,34 @@ export default function LivePage() {
               </p>
             ) : (
               <div className="space-y-2.5 max-h-60 overflow-y-auto pr-1">
-                {Object.values(selectedMatch.events).map((ev: any) => (
-                  <div
-                    key={ev.id}
-                    className="flex items-center gap-3 rounded-xl border border-slate-800 bg-slate-950 p-3 text-sm"
-                  >
-                    <span className="font-mono text-xs font-bold text-cyan-400 bg-slate-900 px-2 py-1 rounded">
-                      {ev.minute}'
-                    </span>
-                    <div>
-                      <p className="font-semibold text-white">
-                        {ev.type === "goal" ? "⚽ Goal!" : ev.type === "yellow_card" ? "🟨 Yellow Card" : ev.type === "red_card" ? "🟥 Red Card" : "🔄 Substitution"}
-                      </p>
-                      {ev.playerName && (
-                        <p className="text-xs text-slate-400">{ev.playerName}</p>
-                      )}
+                {Object.values(selectedMatch.events).map((ev: any) => {
+                  const isTeamA = ev.teamId === (selectedMatch.teamA?.teamId || selectedMatch.teamA?.id);
+                  const teamName = ev.teamName || (isTeamA ? selectedMatch.teamA?.teamName : selectedMatch.teamB?.teamName) || "Team";
+
+                  return (
+                    <div
+                      key={ev.id}
+                      className="flex items-center gap-3 rounded-xl border border-slate-800 bg-slate-950 p-3 text-sm"
+                    >
+                      <span className="font-mono text-xs font-bold text-cyan-400 bg-slate-900 px-2 py-1 rounded">
+                        {ev.minute}'
+                      </span>
+                      <div>
+                        <p className="font-semibold text-white">
+                          {ev.type === "goal" ? "⚽ Goal!" : ev.type === "yellow_card" ? "🟨 Yellow Card" : ev.type === "red_card" ? "🟥 Red Card" : "🔄 Substitution"}
+                          {" — "}
+                          <span className="text-cyan-300 font-bold">{teamName}</span>
+                        </p>
+                        {ev.playerName && (
+                          <p className="text-xs text-slate-300 font-medium mt-0.5">👤 {ev.playerName}</p>
+                        )}
+                        {ev.description && (
+                          <p className="text-xs text-cyan-400/90 italic mt-0.5">📝 {ev.description}</p>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>

@@ -7,6 +7,7 @@ export interface SportFormData {
   code?: string;
   category?: string;
   rules?: string;
+  halfDurationMinutes?: number;
 }
 
 interface SportFormProps {
@@ -25,11 +26,15 @@ export default function SportForm({
     code: "",
     category: "Outdoor",
     rules: "",
+    halfDurationMinutes: 45,
   });
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
-    await onSubmit(form);
+    await onSubmit({
+      ...form,
+      halfDurationMinutes: form.halfDurationMinutes ? Number(form.halfDurationMinutes) : 45,
+    });
   }
 
   return (
@@ -57,17 +62,32 @@ export default function SportForm({
         />
       </div>
 
-      <div>
-        <label className="block text-sm font-medium mb-1">Category</label>
-        <select
-          value={form.category}
-          onChange={(e) => setForm({ ...form, category: e.target.value })}
-          className="w-full rounded-lg border bg-white p-2.5 text-sm"
-        >
-          <option value="Outdoor">Outdoor</option>
-          <option value="Indoor">Indoor</option>
-          <option value="Track & Field">Track & Field</option>
-        </select>
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium mb-1">Category</label>
+          <select
+            value={form.category}
+            onChange={(e) => setForm({ ...form, category: e.target.value })}
+            className="w-full rounded-lg border bg-white p-2.5 text-sm"
+          >
+            <option value="Outdoor">Outdoor</option>
+            <option value="Indoor">Indoor</option>
+            <option value="Track & Field">Track & Field</option>
+          </select>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium mb-1">Half Duration (Minutes)</label>
+          <input
+            type="number"
+            min={1}
+            max={120}
+            value={form.halfDurationMinutes}
+            onChange={(e) => setForm({ ...form, halfDurationMinutes: parseInt(e.target.value) || 45 })}
+            placeholder="45"
+            className="w-full rounded-lg border p-2.5 text-sm font-semibold"
+          />
+        </div>
       </div>
 
       <div className="flex justify-end gap-3 pt-3 border-t">

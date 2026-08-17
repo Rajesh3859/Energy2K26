@@ -19,6 +19,8 @@ export default function DigitalClock({ seconds, status = "live" }: DigitalClockP
         className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-extrabold uppercase border ${
           status === "live"
             ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30 animate-pulse"
+            : status === "paused"
+            ? "bg-amber-500/20 text-amber-300 border-amber-500/40 animate-pulse"
             : status === "half_time"
             ? "bg-amber-500/10 text-amber-400 border-amber-500/30"
             : status === "completed"
@@ -26,7 +28,7 @@ export default function DigitalClock({ seconds, status = "live" }: DigitalClockP
             : "bg-slate-800 text-slate-400 border-slate-700"
         }`}
       >
-        {status}
+        {status === "paused" ? "⏸️ PAUSED" : status}
       </span>
     </div>
   );

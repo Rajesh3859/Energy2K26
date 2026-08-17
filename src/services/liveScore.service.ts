@@ -1,19 +1,42 @@
 import { apiRequest } from "@/lib/api";
 
 export interface FootballEventPayload {
-  type: "goal" | "yellow_card" | "red_card" | "substitution";
+  type: "goal" | "yellow_card" | "red_card" | "substitution" | string;
   teamId: string;
+  teamName?: string;
   minute: number;
   playerName?: string;
+  assistPlayerName?: string;
   description?: string;
+  note?: string;
+  timestamp?: number | string;
+  createdAt?: number | string;
+}
+
+export interface FootballEvent {
+  id: string;
+  type: string;
+  teamId: string;
+  teamName?: string;
+  minute: number;
+  playerName?: string;
+  assistPlayerName?: string;
+  description?: string;
+  note?: string;
+  timestamp?: number | string;
+  createdAt?: number | string;
 }
 
 export interface LiveMatchData {
   matchId: string;
-  status: "not_started" | "live" | "half_time" | "full_time" | "completed" | "cancelled" | "postponed";
+  status: "not_started" | "live" | "paused" | "half_time" | "full_time" | "completed" | "cancelled" | "postponed";
   half?: number;
+  halfDurationMinutes?: number;
+  halfDuration?: number;
   firstHalfStartedAt?: number;
   secondHalfStartedAt?: number;
+  pausedAt?: number;
+  totalPausedSeconds?: number;
   endedAt?: number;
   completedAt?: number;
   teamA?: {
@@ -28,14 +51,7 @@ export interface LiveMatchData {
   };
   scoreTeamA?: number;
   scoreTeamB?: number;
-  events?: Record<string, {
-    id: string;
-    type: string;
-    teamId: string;
-    minute: number;
-    playerName?: string;
-    description?: string;
-  }> | Array<any>;
+  events?: Record<string, FootballEvent> | Array<FootballEvent>;
   updatedAt?: string | number;
 }
 

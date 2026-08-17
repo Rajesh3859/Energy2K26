@@ -11,6 +11,7 @@ export interface CreateMatchData {
   matchDate: string;
   startTime: string;
   venue: string;
+  halfDurationMinutes?: number;
   status?: string;
 }
 

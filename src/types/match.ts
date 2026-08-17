@@ -19,6 +19,7 @@ export interface Match {
   status: MatchStatus;
   startTime: string;
   venue?: string;
+  halfDurationMinutes?: number;
   winnerId?: string;
   scorerId?: string;
   scorerName?: string;

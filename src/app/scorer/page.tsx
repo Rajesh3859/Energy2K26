@@ -18,6 +18,8 @@ import { exportMatchReportCSV } from "@/utils/reportExporter";
 import { rtdb, auth } from "@/lib/firebase";
 import { ref, onValue } from "firebase/database";
 
+import { subscribeToAllLiveMatches, subscribeToLiveMatch } from "@/services/liveMatchRealtime";
+
 export default function ScorerPage() {
   const [matches, setMatches] = useState<Match[]>([]);
   const [activeTab, setActiveTab] = useState<"live" | "history">("live");
@@ -37,6 +39,7 @@ export default function ScorerPage() {
   const [eventTeamId, setEventTeamId] = useState<string>("");
   const [eventMinute, setEventMinute] = useState<number>(1);
   const [playerName, setPlayerName] = useState<string>("");
+  const [assistPlayerName, setAssistPlayerName] = useState<string>("");
   const [description, setDescription] = useState<string>("");
 
   // Derived Safe Team & Score Properties
@@ -62,95 +65,98 @@ export default function ScorerPage() {
     loadMatchesList();
   }, []);
 
-  // Firebase Realtime Database Listener for All Matches Status Sync (Zero-Reload)
+  // Firebase Realtime Database Listener for All Matches Status Sync (Zero Polling)
   useEffect(() => {
-    let unsubscribe: () => void = () => {};
-
-    try {
-      const liveMatchesRef = ref(rtdb, "liveMatches");
-      unsubscribe = onValue(liveMatchesRef, (snapshot) => {
-        if (snapshot.exists()) {
-          const liveDataObj = snapshot.val();
-          setMatches((prevMatches) =>
-            prevMatches.map((m) => {
-              const liveForMatch = liveDataObj[m.id];
-              if (liveForMatch && liveForMatch.status) {
-                return { ...m, status: liveForMatch.status as any };
-              }
-              return m;
-            })
-          );
-
-          if (selectedMatch) {
-            const currentLive = liveDataObj[selectedMatch.id];
-            if (currentLive) {
-              setLiveData(currentLive);
+    const unsubscribe = subscribeToAllLiveMatches((liveDataObj) => {
+      if (liveDataObj) {
+        setMatches((prevMatches) =>
+          prevMatches.map((m) => {
+            const liveForMatch = liveDataObj[m.id];
+            if (liveForMatch && liveForMatch.status) {
+              return { ...m, status: liveForMatch.status as any };
             }
+            return m;
+          })
+        );
+
+        if (selectedMatch) {
+          const currentLive = liveDataObj[selectedMatch.id];
+          if (currentLive) {
+            setLiveData(currentLive);
           }
         }
-      });
-    } catch (err) {
-      console.error("Realtime matches status sync listener error", err);
-    }
+      }
+    });
 
-    return () => unsubscribe();
+    return () => {
+      unsubscribe();
+    };
   }, [selectedMatch?.id]);
 
   // Firebase Realtime Database Listener for Active Match Scoreboard
   useEffect(() => {
     if (!selectedMatch) return;
     const matchId = selectedMatch.id;
-    let unsubscribe: () => void = () => {};
 
-    try {
-      const liveMatchRef = ref(rtdb, `liveMatches/${matchId}`);
-      unsubscribe = onValue(liveMatchRef, (snapshot) => {
-        if (snapshot.exists()) {
-          const data = snapshot.val();
-          setLiveData(data);
-          if (data) {
-            const tAId = data.teamA?.teamId || selectedMatch.teamA?.id || (selectedMatch as any)?.teamAId;
-            if (tAId && !eventTeamId) {
-              setEventTeamId(tAId);
-            }
-          }
-        } else {
-          setLiveData(null);
+    const unsubscribe = subscribeToLiveMatch(matchId, (data) => {
+      setLiveData(data);
+      if (data) {
+        const tAId = data.teamA?.teamId || selectedMatch.teamA?.id || (selectedMatch as any)?.teamAId;
+        if (tAId && !eventTeamId) {
+          setEventTeamId(tAId);
         }
-      });
-    } catch (err) {
-      console.error("Realtime listener error in Scorer page", err);
-      loadLiveScoreDataHttp(matchId);
-    }
+      }
+    });
 
-    return () => unsubscribe();
+    return () => {
+      unsubscribe();
+    };
   }, [selectedMatch?.id]);
 
-  // Real-time Match Clock Ticker
+  // Real-time Match Clock Ticker with Dynamic Admin-Configured Sport Duration & Pause/Resume Support
   useEffect(() => {
     if (!liveData) return;
+
+    // Default to 45 minutes per half if not set by admin
+    const halfMins = liveData.halfDurationMinutes || liveData.halfDuration || (selectedMatch as any)?.halfDurationMinutes || (selectedMatch as any)?.halfDuration || 45;
+    const halfSecs = halfMins * 60;
+    const fullSecs = halfSecs * 2;
 
     const interval = setInterval(() => {
       const status = liveData.status;
       const now = Date.now();
 
       if (status === "live") {
+        const pausedSecs = liveData.totalPausedSeconds || 0;
         if (liveData.half === 2 && liveData.secondHalfStartedAt) {
-          const diffSec = Math.floor((now - liveData.secondHalfStartedAt) / 1000);
-          const currentTotal = 45 * 60 + diffSec;
+          const diffSec = Math.max(0, Math.floor((now - liveData.secondHalfStartedAt) / 1000) - pausedSecs);
+          const currentTotal = halfSecs + diffSec;
           setElapsedSeconds(currentTotal);
-          setEventMinute(Math.min(120, Math.floor(currentTotal / 60) + 1));
+          setEventMinute(Math.min(halfMins * 2 + 30, Math.floor(currentTotal / 60) + 1));
         } else if (liveData.firstHalfStartedAt) {
-          const diffSec = Math.floor((now - liveData.firstHalfStartedAt) / 1000);
+          const diffSec = Math.max(0, Math.floor((now - liveData.firstHalfStartedAt) / 1000) - pausedSecs);
           setElapsedSeconds(diffSec);
-          setEventMinute(Math.min(45, Math.floor(diffSec / 60) + 1));
+          setEventMinute(Math.min(halfMins, Math.floor(diffSec / 60) + 1));
+        }
+      } else if (status === "paused") {
+        const pausedSecs = liveData.totalPausedSeconds || 0;
+        const freezePoint = liveData.pausedAt || now;
+        if (liveData.half === 2 && liveData.secondHalfStartedAt) {
+          const diffSec = Math.max(0, Math.floor((freezePoint - liveData.secondHalfStartedAt) / 1000) - pausedSecs);
+          const currentTotal = halfSecs + diffSec;
+          setElapsedSeconds(currentTotal);
+          setEventMinute(Math.min(halfMins * 2 + 30, Math.floor(currentTotal / 60) + 1));
+        } else if (liveData.firstHalfStartedAt) {
+          const diffSec = Math.max(0, Math.floor((freezePoint - liveData.firstHalfStartedAt) / 1000) - pausedSecs);
+          setElapsedSeconds(diffSec);
+          setEventMinute(Math.min(halfMins, Math.floor(diffSec / 60) + 1));
         }
       } else if (status === "half_time") {
-        setElapsedSeconds(45 * 60);
-        setEventMinute(45);
+        setElapsedSeconds(halfSecs);
+        setEventMinute(halfMins);
       } else if (status === "full_time" || status === "completed") {
-        setElapsedSeconds(90 * 60);
-        setEventMinute(90);
+        setElapsedSeconds(fullSecs);
+        setEventMinute(halfMins * 2);
       } else {
         setElapsedSeconds(0);
         setEventMinute(1);
@@ -158,7 +164,7 @@ export default function ScorerPage() {
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [liveData]);
+  }, [liveData, selectedMatch]);
 
   async function loadMatchesList() {
     try {
@@ -271,15 +277,24 @@ export default function ScorerPage() {
     try {
       setActionLoading(true);
       const targetTeamId = eventTeamId || teamAId || "team-a";
+      const targetTeamName = targetTeamId === teamAId ? teamAName : teamBName;
+      const nowIso = new Date().toISOString();
+
       await createFootballEvent(selectedMatch.id, {
         type: eventType,
         teamId: targetTeamId,
+        teamName: targetTeamName,
         minute: eventMinute,
         playerName: playerName || undefined,
+        assistPlayerName: assistPlayerName || undefined,
         description: description || undefined,
+        note: description || undefined,
+        timestamp: Date.now(),
+        createdAt: nowIso,
       });
 
       setPlayerName("");
+      setAssistPlayerName("");
       setDescription("");
       await loadLiveScoreDataHttp(selectedMatch.id);
     } catch (err) {
@@ -560,18 +575,40 @@ export default function ScorerPage() {
                       </button>
                     )}
 
-                    {/* Step 3: 1st Half End */}
-                    {liveData?.status === "live" && (liveData?.half === 1 || !liveData?.half) && (
+                    {/* Step 3: Pause Live Match */}
+                    {liveData?.status === "live" && (
                       <button
-                        onClick={() => handleStatusChange("half_time")}
+                        onClick={() => handleStatusChange("paused")}
                         disabled={actionLoading}
                         className="w-full sm:w-auto rounded-xl bg-amber-600 px-5 py-2.5 text-sm font-bold text-white shadow-lg hover:bg-amber-500 transition-all disabled:opacity-50 flex items-center gap-2"
                       >
-                        <span>⏸️ 1st Half End (Half Time)</span>
+                        <span>⏸️ Pause Match</span>
                       </button>
                     )}
 
-                    {/* Step 4: Start 2nd Half */}
+                    {/* Step 4: Resume Paused Match */}
+                    {liveData?.status === "paused" && (
+                      <button
+                        onClick={() => handleStatusChange("live")}
+                        disabled={actionLoading}
+                        className="w-full sm:w-auto rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-bold text-white shadow-lg hover:bg-emerald-500 transition-all disabled:opacity-50 flex items-center gap-2"
+                      >
+                        <span>▶️ Resume Match</span>
+                      </button>
+                    )}
+
+                    {/* Step 5: 1st Half End */}
+                    {(liveData?.status === "live" || liveData?.status === "paused") && (liveData?.half === 1 || !liveData?.half) && (
+                      <button
+                        onClick={() => handleStatusChange("half_time")}
+                        disabled={actionLoading}
+                        className="w-full sm:w-auto rounded-xl bg-slate-800 border border-slate-700 px-5 py-2.5 text-sm font-bold text-slate-200 shadow-lg hover:bg-slate-700 transition-all disabled:opacity-50 flex items-center gap-2"
+                      >
+                        <span>🏁 1st Half End (Half Time)</span>
+                      </button>
+                    )}
+
+                    {/* Step 6: Start 2nd Half */}
                     {liveData?.status === "half_time" && (
                       <button
                         onClick={() => handleStatusChange("live")}
@@ -582,8 +619,8 @@ export default function ScorerPage() {
                       </button>
                     )}
 
-                    {/* Step 5: Whistle Full Time */}
-                    {liveData?.status === "live" && liveData?.half === 2 && (
+                    {/* Step 7: Whistle Full Time */}
+                    {(liveData?.status === "live" || liveData?.status === "paused") && liveData?.half === 2 && (
                       <button
                         onClick={() => handleStatusChange("full_time")}
                         disabled={actionLoading}
@@ -661,7 +698,7 @@ export default function ScorerPage() {
                       </div>
                     </div>
 
-                    <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
+                    <div className="grid gap-4 grid-cols-1 sm:grid-cols-3">
                       <div>
                         <label className="block text-xs font-bold text-slate-400 mb-1">Player Name</label>
                         <input
@@ -669,6 +706,17 @@ export default function ScorerPage() {
                           value={playerName}
                           onChange={(e) => setPlayerName(e.target.value)}
                           placeholder="e.g. Lionel Messi"
+                          className="w-full rounded-xl border border-slate-700 bg-slate-950 p-2.5 text-sm text-white"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-slate-400 mb-1">Assist By (Optional)</label>
+                        <input
+                          type="text"
+                          value={assistPlayerName}
+                          onChange={(e) => setAssistPlayerName(e.target.value)}
+                          placeholder="e.g. Angel Di Maria"
                           className="w-full rounded-xl border border-slate-700 bg-slate-950 p-2.5 text-sm text-white"
                         />
                       </div>
@@ -713,7 +761,7 @@ export default function ScorerPage() {
                   <div className="space-y-3 max-h-[550px] overflow-y-auto pr-1">
                     {eventsList.map((ev: any) => {
                       const isTeamA = ev.teamId === teamAId;
-                      const name = isTeamA ? teamAName : teamBName;
+                      const name = ev.teamName || (isTeamA ? teamAName : teamBName);
 
                       return (
                         <div
@@ -728,10 +776,16 @@ export default function ScorerPage() {
                               <p className="font-semibold text-slate-200 text-xs sm:text-sm">
                                 {ev.type === "goal" ? "⚽ Goal" : ev.type === "yellow_card" ? "🟨 Yellow Card" : ev.type === "red_card" ? "🟥 Red Card" : "🔄 Sub"}
                                 {" — "}
-                                <span className="text-slate-400">{name}</span>
+                                <span className="text-slate-300 font-bold">{name}</span>
                               </p>
                               {ev.playerName && (
-                                <p className="text-xs text-slate-400">{ev.playerName}</p>
+                                <p className="text-xs text-slate-300 font-medium mt-0.5">👤 {ev.playerName}</p>
+                              )}
+                              {ev.assistPlayerName && (
+                                <p className="text-xs text-slate-400 font-medium">👟 Assist: {ev.assistPlayerName}</p>
+                              )}
+                              {ev.description && (
+                                <p className="text-xs text-cyan-400/90 italic mt-0.5">📝 {ev.description}</p>
                               )}
                             </div>
                           </div>

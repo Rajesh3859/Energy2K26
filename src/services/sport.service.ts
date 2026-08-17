@@ -6,6 +6,8 @@ export interface Sport {
   code?: string;
   category?: string;
   rules?: string;
+  halfDurationMinutes?: number;
+  totalMinutes?: number;
   createdAt?: string;
 }
 
@@ -14,6 +16,8 @@ export interface CreateSportData {
   code?: string;
   category?: string;
   rules?: string;
+  halfDurationMinutes?: number;
+  totalMinutes?: number;
 }
 
 export async function getSports(): Promise<{ success?: boolean; data: Sport[] }> {

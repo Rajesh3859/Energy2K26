@@ -44,6 +44,7 @@ export default function MatchesPage() {
     scorerEmail: "",
     scheduledDateTime: new Date().toISOString().slice(0, 16),
     venue: "Main Stadium",
+    halfDurationMinutes: 45,
   });
 
   const [editForm, setEditForm] = useState({
@@ -55,6 +56,7 @@ export default function MatchesPage() {
     scorerName: "",
     scorerEmail: "",
     scheduledDateTime: new Date().toISOString().slice(0, 16),
+    halfDurationMinutes: 45,
   });
 
   useEffect(() => {
@@ -101,6 +103,7 @@ export default function MatchesPage() {
           teamAName: defaultTeamA?.name || defaultTeamA?.teamName || "",
           teamBId: defaultTeamB?.id || "",
           teamBName: defaultTeamB?.name || defaultTeamB?.teamName || "",
+          halfDurationMinutes: (defaultSport as any)?.halfDurationMinutes || 45,
         };
       });
     } catch (err) {
@@ -141,6 +144,7 @@ export default function MatchesPage() {
         matchDate: matchDate || new Date().toISOString().slice(0, 10),
         startTime: startTime || "10:00",
         venue: createForm.venue,
+        halfDurationMinutes: Number(createForm.halfDurationMinutes) || 45,
         status: "scheduled",
       } as any);
 
@@ -170,6 +174,7 @@ export default function MatchesPage() {
       scorerName: match.scorerName || "",
       scorerEmail: match.scorerEmail || "",
       scheduledDateTime: `${existingDate}T${existingTime}`,
+      halfDurationMinutes: (match as any).halfDurationMinutes || 45,
     });
   }
 
@@ -182,6 +187,7 @@ export default function MatchesPage() {
     const payload: any = {
       venue: editForm.venue,
       status: editForm.status,
+      halfDurationMinutes: Number(editForm.halfDurationMinutes) || 45,
     };
 
     if (matchDate) payload.matchDate = matchDate;
@@ -501,16 +507,32 @@ export default function MatchesPage() {
             </select>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium mb-1">Venue</label>
-            <input
-              type="text"
-              required
-              value={createForm.venue}
-              onChange={(e) => setCreateForm({ ...createForm, venue: e.target.value })}
-              placeholder="Main Stadium"
-              className="w-full rounded-lg border p-2.5 text-sm"
-            />
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium mb-1">Venue</label>
+              <input
+                type="text"
+                required
+                value={createForm.venue}
+                onChange={(e) => setCreateForm({ ...createForm, venue: e.target.value })}
+                placeholder="Main Stadium"
+                className="w-full rounded-lg border p-2.5 text-sm"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-1">Half Duration (Minutes)</label>
+              <input
+                type="number"
+                min={1}
+                max={120}
+                required
+                value={createForm.halfDurationMinutes}
+                onChange={(e) => setCreateForm({ ...createForm, halfDurationMinutes: parseInt(e.target.value) || 45 })}
+                placeholder="45"
+                className="w-full rounded-lg border p-2.5 text-sm font-semibold"
+              />
+            </div>
           </div>
 
           <div>
@@ -588,15 +610,31 @@ export default function MatchesPage() {
             </select>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium mb-1">Venue</label>
-            <input
-              type="text"
-              required
-              value={editForm.venue}
-              onChange={(e) => setEditForm({ ...editForm, venue: e.target.value })}
-              className="w-full rounded-lg border p-2.5 text-sm"
-            />
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium mb-1">Venue</label>
+              <input
+                type="text"
+                required
+                value={editForm.venue}
+                onChange={(e) => setEditForm({ ...editForm, venue: e.target.value })}
+                className="w-full rounded-lg border p-2.5 text-sm"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-1">Half Duration (Minutes)</label>
+              <input
+                type="number"
+                min={1}
+                max={120}
+                required
+                value={editForm.halfDurationMinutes}
+                onChange={(e) => setEditForm({ ...editForm, halfDurationMinutes: parseInt(e.target.value) || 45 })}
+                placeholder="45"
+                className="w-full rounded-lg border p-2.5 text-sm font-semibold"
+              />
+            </div>
           </div>
 
           <div>
