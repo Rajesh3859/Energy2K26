@@ -146,7 +146,7 @@ export default function LivePage() {
       </div>
 
       {/* Header Banner */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-700 p-6 sm:p-8 text-white shadow-2xl">
+      <div className="relative overflow-hidden rounded-3xl bg-linear-to-r from-cyan-600 via-blue-600 to-indigo-700 p-6 sm:p-8 text-white shadow-2xl">
         <div className="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
             <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs font-semibold backdrop-blur-md border border-white/20 mb-3">

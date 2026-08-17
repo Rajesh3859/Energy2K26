@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { getMatches, createMatch, updateMatch, deleteMatch } from "@/services/match.service";
+import { getLiveScore } from "@/services/liveScore.service";
 import { getTeams } from "@/services/team.service";
 import { getSports, Sport } from "@/services/sport.service";
 import { getUsers } from "@/services/user.service";
@@ -11,6 +12,7 @@ import { User } from "@/types/auth";
 import PageHeader from "@/components/common/PageHeader";
 import DataTable, { Column } from "@/components/common/DataTable";
 import Modal from "@/components/common/Modal";
+import { exportMatchReportCSV } from "@/utils/reportExporter";
 import LoadingSpinner from "@/components/common/LoadingSpinner";
 import ErrorAlert from "@/components/common/ErrorAlert";
 
@@ -26,6 +28,7 @@ export default function MatchesPage() {
   const [editingMatch, setEditingMatch] = useState<Match | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
 
   const [filterStatus, setFilterStatus] = useState<string>("ALL");
 
@@ -217,6 +220,26 @@ export default function MatchesPage() {
     }
   }
 
+  async function handleDownloadResult(match: Match) {
+    try {
+      setDownloadingId(match.id);
+      let liveData: any = null;
+      try {
+        const res = await getLiveScore(match.id);
+        liveData = res?.data || null;
+      } catch (e) {
+        console.warn("Could not fetch live score details:", e);
+      }
+
+      await exportMatchReportCSV(match, liveData);
+    } catch (err) {
+      console.error("Error downloading match result:", err);
+      alert("Failed to generate match result download.");
+    } finally {
+      setDownloadingId(null);
+    }
+  }
+
   const filteredMatches = matches.filter((m) => {
     if (filterStatus === "ALL") return true;
     return m.status?.toUpperCase() === filterStatus;
@@ -280,23 +303,37 @@ export default function MatchesPage() {
       key: "actions",
       label: "Actions",
       className: "text-right",
-      render: (match) => (
-        <div className="space-x-2">
-          <button
-            onClick={() => startEditMatch(match)}
-            className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-100 transition-all"
-          >
-            Edit
-          </button>
-          <button
-            onClick={() => handleDeleteMatch(match.id)}
-            disabled={deletingId === match.id}
-            className="rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-600 hover:bg-red-100 transition-all disabled:opacity-50"
-          >
-            {deletingId === match.id ? "Deleting..." : "Delete"}
-          </button>
-        </div>
-      ),
+      render: (match) => {
+        const isCompleted = match.status?.toUpperCase() === "COMPLETED";
+        return (
+          <div className="flex items-center justify-end gap-2">
+            {isCompleted && (
+              <button
+                onClick={() => handleDownloadResult(match)}
+                disabled={downloadingId === match.id}
+                className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-300 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-100 hover:border-emerald-400 transition-all disabled:opacity-50 shadow-xs"
+                title="Download Official Match Result Report"
+              >
+                <span>📥</span>
+                <span>{downloadingId === match.id ? "Preparing..." : "Download Result"}</span>
+              </button>
+            )}
+            <button
+              onClick={() => startEditMatch(match)}
+              className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-100 transition-all"
+            >
+              Edit
+            </button>
+            <button
+              onClick={() => handleDeleteMatch(match.id)}
+              disabled={deletingId === match.id}
+              className="rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-600 hover:bg-red-100 transition-all disabled:opacity-50"
+            >
+              {deletingId === match.id ? "Deleting..." : "Delete"}
+            </button>
+          </div>
+        );
+      },
     },
   ];
 

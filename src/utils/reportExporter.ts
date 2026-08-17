@@ -21,6 +21,7 @@ export async function exportMatchReportCSV(match: any, initialLiveData?: any) {
   const scoreB = liveData?.teamB?.score ?? match.result?.teamB?.score ?? 0;
 
   const rawEvents = liveData?.events ? Object.values(liveData.events) : [];
+  rawEvents.sort((a: any, b: any) => (a.minute || 0) - (b.minute || 0));
 
   let winner = "Draw";
   if (scoreA > scoreB) winner = teamAName;
