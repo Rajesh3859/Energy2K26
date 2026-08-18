@@ -528,7 +528,7 @@ export default function MatchesPage() {
                 max={120}
                 required
                 value={createForm.halfDurationMinutes}
-                onChange={(e) => setCreateForm({ ...createForm, halfDurationMinutes: parseInt(e.target.value) || 45 })}
+                onChange={(e) => setCreateForm({ ...createForm, halfDurationMinutes: e.target.value === "" ? ("" as any) : parseInt(e.target.value) })}
                 placeholder="45"
                 className="w-full rounded-lg border p-2.5 text-sm font-semibold"
               />
@@ -630,7 +630,7 @@ export default function MatchesPage() {
                 max={120}
                 required
                 value={editForm.halfDurationMinutes}
-                onChange={(e) => setEditForm({ ...editForm, halfDurationMinutes: parseInt(e.target.value) || 45 })}
+                onChange={(e) => setEditForm({ ...editForm, halfDurationMinutes: e.target.value === "" ? ("" as any) : parseInt(e.target.value) })}
                 placeholder="45"
                 className="w-full rounded-lg border p-2.5 text-sm font-semibold"
               />

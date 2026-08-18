@@ -82,8 +82,8 @@ export default function SportForm({
             type="number"
             min={1}
             max={120}
-            value={form.halfDurationMinutes}
-            onChange={(e) => setForm({ ...form, halfDurationMinutes: parseInt(e.target.value) || 45 })}
+            value={form.halfDurationMinutes ?? ""}
+            onChange={(e) => setForm({ ...form, halfDurationMinutes: e.target.value === "" ? ("" as any) : parseInt(e.target.value) })}
             placeholder="45"
             className="w-full rounded-lg border p-2.5 text-sm font-semibold"
           />
