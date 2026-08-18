@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { ref, set } from "firebase/database";
+import { database } from "@/lib/firebase";
 import { getPublicLiveMatches, getPublicLiveMatch } from "@/services/publicScore.service";
 import MatchCard from "@/components/cards/MatchCard";
 import LoadingSpinner from "@/components/common/LoadingSpinner";
@@ -124,8 +126,21 @@ export default function LivePage() {
             </p>
           </div>
 
-          <div className="flex items-center gap-2 text-xs font-mono bg-black/20 backdrop-blur-md px-4 py-2 rounded-2xl border border-white/10">
-            <span>⚡ Firebase Realtime Sync Active (0ms)</span>
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 text-xs font-mono bg-black/20 backdrop-blur-md px-4 py-2 rounded-2xl border border-white/10">
+              <span>⚡ Firebase Realtime Sync Active (0ms)</span>
+            </div>
+            <button
+              onClick={() => {
+                const targetId = selectedMatch?.matchId || selectedMatch?.id || (liveMatches[0] ? (liveMatches[0].matchId || liveMatches[0].id) : "test_match");
+                const testRef = ref(database, `liveMatches/${targetId}/test`);
+                set(testRef, Date.now());
+                console.log(`🧪 Triggered test write to liveMatches/${targetId}/test`);
+              }}
+              className="px-3 py-2 bg-white/20 hover:bg-white/30 text-white rounded-2xl text-xs font-bold border border-white/30 transition-all cursor-pointer shadow-md"
+            >
+              Test Realtime
+            </button>
           </div>
         </div>
       </div>
