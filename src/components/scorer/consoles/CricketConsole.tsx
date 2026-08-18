@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { createFootballEvent, deleteFootballEvent } from "@/services/liveScore.service";
+import { cricketAction } from "@/services/cricket.service";
 
 interface CricketConsoleProps {
   match: any;
@@ -40,6 +41,19 @@ export default function CricketConsole({ match, liveData, onEventAdded }: Cricke
         : runVal === 0
         ? `Dot ball to ${playerName || "Batsman"}`
         : `${runVal} runs scored by ${playerName || "Batsman"}`;
+
+      let cricketPayload: any = { type: "RUN", runs: runVal, deliveryType: "LEGAL" };
+      if (wicketVal) {
+        cricketPayload = { type: "WICKET", deliveryType: "LEGAL" };
+      } else if (type === "wide") {
+        cricketPayload = { type: "WIDE", runs: runVal || 1, deliveryType: "WIDE" };
+      } else if (type === "no_ball") {
+        cricketPayload = { type: "NO_BALL", runs: runVal || 1, deliveryType: "NO_BALL" };
+      }
+
+      await cricketAction(matchId, cricketPayload).catch((e) =>
+        console.warn("cricketAction call warning:", e)
+      );
 
       await createFootballEvent(matchId, {
         type: eventType,

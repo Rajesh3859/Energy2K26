@@ -49,13 +49,13 @@ export default function SportConsoleResolver({
   actionLoading,
 }: SportConsoleResolverProps) {
   const targetSport =
+    match?.sportName ||
     match?.sportCode ||
     match?.sport ||
-    match?.sportName ||
+    liveData?.sportName ||
     liveData?.sportCode ||
     liveData?.sport ||
-    liveData?.sportName ||
-    match?.sportId;
+    match;
   const sportDef = getSportDefinition(targetSport);
   const code = sportDef.code;
 

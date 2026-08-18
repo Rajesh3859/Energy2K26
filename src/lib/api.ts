@@ -55,7 +55,16 @@ export async function apiRequest(
     response = await makeFetch(baseUrl);
   } catch (err: any) {
     if (err instanceof TypeError && err.message === "Failed to fetch") {
-      if (baseUrl.includes("localhost") || baseUrl.includes("127.0.0.1")) {
+      const isLocalhost = typeof window !== "undefined" && (window.location.hostname.includes("localhost") || window.location.hostname.includes("127.0.0.1"));
+
+      // Automatic fallback to local backend when developing locally
+      if (isLocalhost && !baseUrl.includes("localhost") && !baseUrl.includes("127.0.0.1")) {
+        try {
+          response = await makeFetch("http://localhost:5000/api/v1");
+        } catch (localErr) {
+          throw new Error(`Failed to connect to deployed backend (${baseUrl}) and local dev backend (http://localhost:5000/api/v1).`);
+        }
+      } else if (baseUrl.includes("localhost") || baseUrl.includes("127.0.0.1")) {
         const isProductionHost = typeof window !== "undefined" && !window.location.hostname.includes("localhost") && !window.location.hostname.includes("127.0.0.1");
         if (isProductionHost) {
           throw new Error("Backend server connection offline. On Netlify, please add environment variable NEXT_PUBLIC_API_URL pointing to your deployed Vercel backend API URL (e.g. https://your-app.vercel.app/api/v1).");
@@ -93,4 +102,17 @@ export async function apiRequest(
   }
 
   return data;
+}
+
+export async function updateSportState(matchId: string, action: Record<string, any>) {
+  return apiRequest(`/live-matches/${matchId}/state`, {
+    method: "POST",
+    body: JSON.stringify(action),
+  });
+}
+
+export async function finalizeMatch(matchId: string) {
+  return apiRequest(`/live-matches/${matchId}/complete`, {
+    method: "POST",
+  });
 }

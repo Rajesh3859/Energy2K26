@@ -18,6 +18,8 @@ import { exportMatchReportCSV } from "@/utils/reportExporter";
 import { rtdb, auth } from "@/lib/firebase";
 import { ref, onValue } from "firebase/database";
 
+import MultiSportScoreDisplay from "@/components/sports/MultiSportScoreDisplay";
+import SportConsoleResolver from "@/components/scorer/SportConsoleResolver";
 import { subscribeToAllLiveMatches, subscribeToLiveMatch } from "@/services/liveMatchRealtime";
 
 export default function ScorerPage() {
@@ -529,27 +531,15 @@ export default function ScorerPage() {
                   </div>
 
                   {/* Live Scoreboard */}
-                  <div className="grid grid-cols-3 items-center text-center">
-                    <div className="space-y-1 sm:space-y-2">
-                      <h2 className="text-lg sm:text-2xl font-black text-white truncate">{teamAName}</h2>
-                      <span className="text-xs font-semibold text-slate-400">Home</span>
-                    </div>
-
-                    <div className="flex items-center justify-center gap-2 sm:gap-4">
-                      <span className="text-4xl sm:text-6xl font-black tracking-tight text-cyan-400 font-mono">
-                        {scoreA}
-                      </span>
-                      <span className="text-xl sm:text-3xl font-light text-slate-600">:</span>
-                      <span className="text-4xl sm:text-6xl font-black tracking-tight text-cyan-400 font-mono">
-                        {scoreB}
-                      </span>
-                    </div>
-
-                    <div className="space-y-1 sm:space-y-2">
-                      <h2 className="text-lg sm:text-2xl font-black text-white truncate">{teamBName}</h2>
-                      <span className="text-xs font-semibold text-slate-400">Away</span>
-                    </div>
-                  </div>
+                  <MultiSportScoreDisplay
+                    sportCode={(selectedMatch as any).sportCode || (selectedMatch as any).sport}
+                    sportName={selectedMatch.sportName || (selectedMatch as any).sport || "Football"}
+                    teamAName={teamAName}
+                    teamBName={teamBName}
+                    scoreA={scoreA}
+                    scoreB={scoreB}
+                    liveData={liveData}
+                  />
 
                   {/* Status Step Transitions & Report Download */}
                   <div className="mt-6 sm:mt-8 pt-4 sm:pt-6 border-t border-slate-800/80 flex flex-wrap items-center justify-center gap-2.5">
@@ -650,98 +640,26 @@ export default function ScorerPage() {
                   </div>
                 </div>
 
-                {/* Event Form */}
-                <div className="rounded-2xl border border-slate-800 bg-slate-900/90 p-5 sm:p-6 shadow-xl space-y-4">
-                  <h3 className="text-base sm:text-lg font-bold text-white flex items-center gap-2">
-                    <span>⚽ Record Live Football Event</span>
-                  </h3>
-
-                  <form onSubmit={handleAddEvent} className="space-y-4">
-                    <div className="grid gap-4 grid-cols-1 sm:grid-cols-3">
-                      <div>
-                        <label className="block text-xs font-bold text-slate-400 mb-1">Event Type</label>
-                        <select
-                          value={eventType}
-                          onChange={(e) => setEventType(e.target.value as any)}
-                          className="w-full rounded-xl border border-slate-700 bg-slate-950 p-2.5 text-sm text-white"
-                        >
-                          <option value="goal">⚽ Goal</option>
-                          <option value="yellow_card">🟨 Yellow Card</option>
-                          <option value="red_card">🟥 Red Card</option>
-                          <option value="substitution">🔄 Substitution</option>
-                        </select>
-                      </div>
-
-                      <div>
-                        <label className="block text-xs font-bold text-slate-400 mb-1">Team</label>
-                        <select
-                          value={eventTeamId || teamAId}
-                          onChange={(e) => setEventTeamId(e.target.value)}
-                          className="w-full rounded-xl border border-slate-700 bg-slate-950 p-2.5 text-sm text-white"
-                        >
-                          <option value={teamAId}>{teamAName}</option>
-                          <option value={teamBId}>{teamBName}</option>
-                        </select>
-                      </div>
-
-                      <div>
-                        <label className="block text-xs font-bold text-slate-400 mb-1">Minute</label>
-                        <input
-                          type="number"
-                          min={1}
-                          max={130}
-                          value={eventMinute}
-                          onChange={(e) => setEventMinute(parseInt(e.target.value) || 1)}
-                          className="w-full rounded-xl border border-slate-700 bg-slate-950 p-2.5 text-sm text-white"
-                          required
-                        />
-                      </div>
-                    </div>
-
-                    <div className="grid gap-4 grid-cols-1 sm:grid-cols-3">
-                      <div>
-                        <label className="block text-xs font-bold text-slate-400 mb-1">Player Name</label>
-                        <input
-                          type="text"
-                          value={playerName}
-                          onChange={(e) => setPlayerName(e.target.value)}
-                          placeholder="e.g. Lionel Messi"
-                          className="w-full rounded-xl border border-slate-700 bg-slate-950 p-2.5 text-sm text-white"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-xs font-bold text-slate-400 mb-1">Assist By (Optional)</label>
-                        <input
-                          type="text"
-                          value={assistPlayerName}
-                          onChange={(e) => setAssistPlayerName(e.target.value)}
-                          placeholder="e.g. Angel Di Maria"
-                          className="w-full rounded-xl border border-slate-700 bg-slate-950 p-2.5 text-sm text-white"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-xs font-bold text-slate-400 mb-1">Description / Note</label>
-                        <input
-                          type="text"
-                          value={description}
-                          onChange={(e) => setDescription(e.target.value)}
-                          placeholder="e.g. Header from corner"
-                          className="w-full rounded-xl border border-slate-700 bg-slate-950 p-2.5 text-sm text-white"
-                        />
-                      </div>
-                    </div>
-
-                    <button
-                      type="submit"
-                      disabled={actionLoading || (liveData?.status !== "live" && selectedMatch.status !== "LIVE" as any)}
-                      className="w-full rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 p-3 text-sm font-bold text-white shadow-lg hover:brightness-110 transition-all disabled:opacity-50"
-                    >
-                      {actionLoading ? "Submitting Event..." : "Record Live Event"}
-                    </button>
-                  </form>
-                </div>
+                {/* Dynamic Sport Console Resolver */}
+                <SportConsoleResolver
+                  match={selectedMatch}
+                  liveData={liveData}
+                  onEventAdded={loadMatchesList}
+                  eventType={eventType}
+                  setEventType={setEventType}
+                  eventTeamId={eventTeamId}
+                  setEventTeamId={setEventTeamId}
+                  eventMinute={eventMinute}
+                  setEventMinute={setEventMinute}
+                  playerName={playerName}
+                  setPlayerName={setPlayerName}
+                  assistPlayerName={assistPlayerName}
+                  setAssistPlayerName={setAssistPlayerName}
+                  description={description}
+                  setDescription={setDescription}
+                  handleAddEvent={handleAddEvent}
+                  actionLoading={actionLoading}
+                />
               </div>
 
               {/* Event Stream & Timeline */}

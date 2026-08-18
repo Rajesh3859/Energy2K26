@@ -132,9 +132,19 @@ export const SPORTS: Record<string, SportDefinition> = {
 export function getSportDefinition(sportCodeOrName?: any): SportDefinition {
   if (!sportCodeOrName) return SPORTS.football;
 
-  const str = typeof sportCodeOrName === "object"
-    ? (sportCodeOrName.code || sportCodeOrName.sportCode || sportCodeOrName.sport || sportCodeOrName.name || sportCodeOrName.sportName || sportCodeOrName.id || "")
-    : String(sportCodeOrName);
+  let str = "";
+  if (typeof sportCodeOrName === "object" && sportCodeOrName !== null) {
+    str =
+      sportCodeOrName.sportCode ||
+      sportCodeOrName.sport ||
+      sportCodeOrName.sportName ||
+      sportCodeOrName.name ||
+      (sportCodeOrName.code && !sportCodeOrName.matchCode ? sportCodeOrName.code : "") ||
+      sportCodeOrName.id ||
+      "";
+  } else {
+    str = String(sportCodeOrName);
+  }
 
   if (!str) return SPORTS.football;
 
@@ -146,6 +156,10 @@ export function getSportDefinition(sportCodeOrName?: any): SportDefinition {
       s.code.toLowerCase() === key ||
       s.name.toLowerCase() === str.toLowerCase().trim() ||
       s.id === str ||
+      key.includes(s.code.toLowerCase()) ||
+      key.includes(s.name.toLowerCase()) ||
+      s.code.toLowerCase().includes(key) ||
+      s.name.toLowerCase().includes(key) ||
       str.toLowerCase().includes(s.code) ||
       str.toLowerCase().includes(s.name.toLowerCase())
   );

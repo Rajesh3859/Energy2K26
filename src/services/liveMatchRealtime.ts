@@ -1,4 +1,4 @@
-import { ref, onValue, Unsubscribe } from "firebase/database";
+import { ref, onValue, remove, Unsubscribe } from "firebase/database";
 import { database, auth } from "@/lib/firebase";
 import { signInAnonymously } from "firebase/auth";
 import { getPublicLiveMatch, getPublicLiveMatches } from "@/services/publicScore.service";
@@ -10,6 +10,16 @@ async function ensureAuth() {
     }
   } catch (err) {
     console.warn("Firebase anonymous auth sign-in warning:", err);
+  }
+}
+
+export async function removeLiveMatchRealtime(matchId: string) {
+  try {
+    await ensureAuth();
+    const matchRef = ref(database, `liveMatches/${matchId}`);
+    await remove(matchRef);
+  } catch (err) {
+    console.warn("Failed to remove live match node from client RTDB:", err);
   }
 }
 

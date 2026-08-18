@@ -1,5 +1,6 @@
 import { apiRequest } from "@/lib/api";
 import { Match } from "@/types/match";
+import { removeLiveMatchRealtime } from "@/services/liveMatchRealtime";
 
 export interface CreateMatchData {
   sportId: string;
@@ -41,6 +42,10 @@ export async function updateMatch(
 }
 
 export async function deleteMatch(id: string): Promise<{ success?: boolean; message?: string }> {
+  try {
+    await removeLiveMatchRealtime(id);
+  } catch (err) {}
+
   return apiRequest(`/matches/${id}`, {
     method: "DELETE",
   });

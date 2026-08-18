@@ -9,6 +9,7 @@ import MatchCard from "@/components/cards/MatchCard";
 import LoadingSpinner from "@/components/common/LoadingSpinner";
 import ErrorAlert from "@/components/common/ErrorAlert";
 import Modal from "@/components/common/Modal";
+import MultiSportScoreDisplay from "@/components/sports/MultiSportScoreDisplay";
 import { subscribeToAllLiveMatches, subscribeToLiveMatch } from "@/services/liveMatchRealtime";
 
 export default function LivePage() {
@@ -176,12 +177,14 @@ export default function LivePage() {
                   <MatchCard
                     key={match.matchId || match.id}
                     sportName={match.sportName || "Football"}
+                    sportCode={match.sportCode || match.sport}
                     status={match.status}
                     teamAName={teamA.teamName || "Team A"}
                     teamBName={teamB.teamName || "Team B"}
                     scoreA={teamA.score ?? 0}
                     scoreB={teamB.score ?? 0}
                     eventsCount={events.length}
+                    liveData={match}
                     onClick={() => openMatchDetails(match.matchId || match.id)}
                   />
                 );
@@ -199,18 +202,16 @@ export default function LivePage() {
           title="Live Match Center"
           maxWidth="lg"
         >
-          <div className="text-slate-100">
-            <div className="grid grid-cols-3 items-center text-center my-6 py-4 rounded-2xl bg-slate-950/60 border border-slate-800">
-              <p className="text-xl font-extrabold text-white">
-                {selectedMatch.teamA?.teamName || "Team A"}
-              </p>
-              <div className="text-4xl font-black font-mono text-cyan-400">
-                {selectedMatch.teamA?.score ?? 0} : {selectedMatch.teamB?.score ?? 0}
-              </div>
-              <p className="text-xl font-extrabold text-white">
-                {selectedMatch.teamB?.teamName || "Team B"}
-              </p>
-            </div>
+          <div className="text-slate-100 space-y-6">
+            <MultiSportScoreDisplay
+              sportCode={selectedMatch.sportCode || selectedMatch.sport}
+              sportName={selectedMatch.sportName || "Football"}
+              teamAName={selectedMatch.teamA?.teamName || "Team A"}
+              teamBName={selectedMatch.teamB?.teamName || "Team B"}
+              scoreA={selectedMatch.teamA?.score ?? 0}
+              scoreB={selectedMatch.teamB?.score ?? 0}
+              liveData={selectedMatch}
+            />
 
             <h4 className="font-bold text-sm text-slate-300 mb-3 uppercase tracking-wider">
               Live Event Feed

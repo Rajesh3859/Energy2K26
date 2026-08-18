@@ -47,7 +47,10 @@ export default function LoginPage() {
       const lowerEmail = email.toLowerCase();
       const effectiveRole = role || (lowerEmail.includes("admin") ? "admin" : lowerEmail.includes("scorer") ? "scorer" : "scorer");
 
+      const token = await userCredential.user.getIdToken();
+
       if (effectiveRole === "admin" || lowerEmail.includes("admin")) {
+        console.log("🔑 [ADMIN LOGIN SUCCESS] Bearer Token:\n", token);
         router.push("/admin");
         return;
       }
@@ -107,7 +110,7 @@ export default function LoginPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="w-full rounded-xl border border-slate-800 bg-slate-900 p-3 text-sm text-white placeholder:text-slate-500 focus:border-cyan-500 focus:outline-none"
-              placeholder="scorer@energy.com"
+              placeholder="Enter your email"
               required
             />
           </div>

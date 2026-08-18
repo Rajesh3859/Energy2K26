@@ -1,24 +1,30 @@
 "use client";
 
+import MultiSportScoreDisplay from "@/components/sports/MultiSportScoreDisplay";
+
 interface MatchCardProps {
   sportName?: string;
+  sportCode?: string;
   status: string;
   teamAName: string;
   teamBName: string;
   scoreA: number;
   scoreB: number;
   eventsCount?: number;
+  liveData?: any;
   onClick?: () => void;
 }
 
 export default function MatchCard({
   sportName = "Football",
+  sportCode,
   status,
   teamAName,
   teamBName,
   scoreA,
   scoreB,
   eventsCount = 0,
+  liveData,
   onClick,
 }: MatchCardProps) {
   const isLive = status === "live" || status === "half_time";
@@ -26,9 +32,9 @@ export default function MatchCard({
   return (
     <div
       onClick={onClick}
-      className="group relative cursor-pointer overflow-hidden rounded-3xl border border-slate-800 bg-slate-900/90 p-6 shadow-xl transition-all duration-300 hover:border-cyan-500/50 hover:shadow-cyan-500/10 hover:scale-[1.02]"
+      className="group relative cursor-pointer overflow-hidden rounded-3xl border border-slate-800 bg-slate-900/90 p-4 sm:p-6 shadow-xl transition-all duration-300 hover:border-cyan-500/50 hover:shadow-cyan-500/10 hover:scale-[1.02]"
     >
-      <div className="flex items-center justify-between border-b border-slate-800/80 pb-3 mb-4">
+      <div className="flex items-center justify-between border-b border-slate-800/80 pb-3 mb-3">
         <span className="text-xs font-bold text-cyan-400 uppercase tracking-wider">
           {sportName}
         </span>
@@ -49,29 +55,15 @@ export default function MatchCard({
         </span>
       </div>
 
-      <div className="grid grid-cols-3 items-center text-center my-4">
-        <div>
-          <p className="text-lg font-extrabold text-white group-hover:text-cyan-300 transition-colors">
-            {teamAName}
-          </p>
-        </div>
-
-        <div className="flex items-center justify-center gap-2">
-          <span className="text-4xl font-black font-mono text-cyan-400">
-            {scoreA}
-          </span>
-          <span className="text-xl font-light text-slate-600">:</span>
-          <span className="text-4xl font-black font-mono text-cyan-400">
-            {scoreB}
-          </span>
-        </div>
-
-        <div>
-          <p className="text-lg font-extrabold text-white group-hover:text-cyan-300 transition-colors">
-            {teamBName}
-          </p>
-        </div>
-      </div>
+      <MultiSportScoreDisplay
+        sportCode={sportCode}
+        sportName={sportName}
+        teamAName={teamAName}
+        teamBName={teamBName}
+        scoreA={scoreA}
+        scoreB={scoreB}
+        liveData={liveData}
+      />
 
       <div className="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs text-slate-400">
         <span>{eventsCount} Live Events</span>

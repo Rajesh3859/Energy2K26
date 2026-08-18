@@ -114,3 +114,17 @@ export async function completeMatch(matchId: string): Promise<{ success?: boolea
     method: "POST",
   });
 }
+
+export async function finalizeMatch(matchId: string): Promise<{ success?: boolean; data: LiveMatchData }> {
+  return completeMatch(matchId);
+}
+
+export async function updateSportState(
+  matchId: string,
+  action: Record<string, any>
+): Promise<{ success?: boolean; data: any }> {
+  return apiRequest(`/live-matches/${matchId}/state`, {
+    method: "POST",
+    body: JSON.stringify(action),
+  });
+}
