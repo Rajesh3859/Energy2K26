@@ -54,12 +54,21 @@ export async function apiRequest(
   try {
     response = await makeFetch(baseUrl);
   } catch (err: any) {
-    if (err instanceof TypeError && err.message === "Failed to fetch" && baseUrl.includes("localhost")) {
-      const fallbackBaseUrl = baseUrl.replace("localhost", "127.0.0.1");
-      try {
-        response = await makeFetch(fallbackBaseUrl);
-      } catch (fallbackErr) {
-        throw new Error("Backend server connection offline. Please verify the Express backend is running at http://127.0.0.1:5000.");
+    if (err instanceof TypeError && err.message === "Failed to fetch") {
+      if (baseUrl.includes("localhost") || baseUrl.includes("127.0.0.1")) {
+        const isProductionHost = typeof window !== "undefined" && !window.location.hostname.includes("localhost") && !window.location.hostname.includes("127.0.0.1");
+        if (isProductionHost) {
+          throw new Error("Backend server connection offline. On Netlify, please add environment variable NEXT_PUBLIC_API_URL pointing to your deployed Vercel backend API URL (e.g. https://your-app.vercel.app/api/v1).");
+        }
+
+        const fallbackBaseUrl = baseUrl.replace("localhost", "127.0.0.1");
+        try {
+          response = await makeFetch(fallbackBaseUrl);
+        } catch (fallbackErr) {
+          throw new Error("Backend server connection offline. Please verify the Express backend is running at http://127.0.0.1:5000.");
+        }
+      } else {
+        throw new Error(`Failed to connect to backend server at ${baseUrl}. Please check your deployed Vercel backend service.`);
       }
     } else {
       throw err;
