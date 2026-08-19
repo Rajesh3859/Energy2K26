@@ -34,18 +34,67 @@ export default function MultiSportScoreDisplay({
 
   // 1. CRICKET SCOREBOARD DISPLAY
   if (code === "cricket") {
-    const teamAScoreObj = liveData?.teamA?.score || liveData?.scoreA;
-    const teamBScoreObj = liveData?.teamB?.score || liveData?.scoreB;
+    const eventsList: any[] = liveData?.events ? (Array.isArray(liveData.events) ? liveData.events : Object.values(liveData.events)) : [];
 
-    const runsA = typeof teamAScoreObj === "object" ? (teamAScoreObj?.score ?? teamAScoreObj?.runs ?? 0) : (Number(teamAScoreObj) || scoreA || 0);
-    const wicketsA = typeof teamAScoreObj === "object" ? (teamAScoreObj?.wickets ?? 0) : (liveData?.wicketsTeamA || 0);
-    const oversA = typeof teamAScoreObj === "object" ? (teamAScoreObj?.overs ?? 0) : (liveData?.oversTeamA || 0);
+    const teamAId = liveData?.teamA?.teamId || "teamA";
+    const teamBId = liveData?.teamB?.teamId || "teamB";
 
-    const runsB = typeof teamBScoreObj === "object" ? (teamBScoreObj?.score ?? teamBScoreObj?.runs ?? 0) : (Number(teamBScoreObj) || scoreB || 0);
-    const wicketsB = typeof teamBScoreObj === "object" ? (teamBScoreObj?.wickets ?? 0) : (liveData?.wicketsTeamB || 0);
-    const oversB = typeof teamBScoreObj === "object" ? (teamBScoreObj?.overs ?? 0) : (liveData?.oversTeamB || 0);
+    // Dynamic Team A Cricket score calculation from events stream
+    const dynamicA = (() => {
+      let r = 0, w = 0, legalBalls = 0;
+      eventsList.forEach((ev: any) => {
+        const matchesA = ev.teamId === teamAId || (ev.teamName && teamAName && ev.teamName.toLowerCase().trim() === teamAName.toLowerCase().trim());
+        if (matchesA) {
+          if (ev.type === "run" || ev.type === "boundary_4" || ev.type === "boundary_6" || ev.type === "wide" || ev.type === "no_ball" || ev.type === "bye" || ev.type === "leg_bye") {
+            const runVal = ev.type === "boundary_4" ? 4 : ev.type === "boundary_6" ? 6 : (typeof ev.runs === "number" ? ev.runs : 1);
+            r += runVal;
+          }
+          if (ev.type === "wicket") {
+            w += 1;
+          }
+          if (ev.type !== "wide" && ev.type !== "no_ball") {
+            legalBalls += 1;
+          }
+        }
+      });
+      const ovStr = `${Math.floor(legalBalls / 6)}.${legalBalls % 6}`;
+      return { runs: r, wickets: w, overs: ovStr, legalBalls };
+    })();
 
-    const currentInnings = liveData?.currentInnings || (runsB > 0 || oversB > 0 ? 2 : 1);
+    // Dynamic Team B Cricket score calculation from events stream
+    const dynamicB = (() => {
+      let r = 0, w = 0, legalBalls = 0;
+      eventsList.forEach((ev: any) => {
+        const matchesB = ev.teamId === teamBId || (ev.teamName && teamBName && ev.teamName.toLowerCase().trim() === teamBName.toLowerCase().trim());
+        if (matchesB) {
+          if (ev.type === "run" || ev.type === "boundary_4" || ev.type === "boundary_6" || ev.type === "wide" || ev.type === "no_ball" || ev.type === "bye" || ev.type === "leg_bye") {
+            const runVal = ev.type === "boundary_4" ? 4 : ev.type === "boundary_6" ? 6 : (typeof ev.runs === "number" ? ev.runs : 1);
+            r += runVal;
+          }
+          if (ev.type === "wicket") {
+            w += 1;
+          }
+          if (ev.type !== "wide" && ev.type !== "no_ball") {
+            legalBalls += 1;
+          }
+        }
+      });
+      const ovStr = `${Math.floor(legalBalls / 6)}.${legalBalls % 6}`;
+      return { runs: r, wickets: w, overs: ovStr, legalBalls };
+    })();
+
+    const tA = liveData?.teamA;
+    const tB = liveData?.teamB;
+
+    const runsA = dynamicA.runs > 0 ? dynamicA.runs : (typeof tA?.score === "object" ? (tA?.score?.runs ?? tA?.score?.score ?? 0) : (Number(tA?.score) || liveData?.runsTeamA || scoreA || 0));
+    const wicketsA = dynamicA.wickets > 0 ? dynamicA.wickets : (typeof tA?.score === "object" ? (tA?.score?.wickets ?? 0) : (liveData?.wicketsTeamA || 0));
+    const oversA = dynamicA.legalBalls > 0 ? dynamicA.overs : (typeof tA?.score === "object" ? (tA?.score?.overs ?? 0) : (liveData?.oversTeamA || 0));
+
+    const runsB = dynamicB.runs > 0 ? dynamicB.runs : (typeof tB?.score === "object" ? (tB?.score?.runs ?? tB?.score?.score ?? 0) : (Number(tB?.score) || liveData?.runsTeamB || scoreB || 0));
+    const wicketsB = dynamicB.wickets > 0 ? dynamicB.wickets : (typeof tB?.score === "object" ? (tB?.score?.wickets ?? 0) : (liveData?.wicketsTeamB || 0));
+    const oversB = dynamicB.legalBalls > 0 ? dynamicB.overs : (typeof tB?.score === "object" ? (tB?.score?.overs ?? 0) : (liveData?.oversTeamB || 0));
+
+    const currentInnings = liveData?.currentInnings || (runsB > 0 || oversB > 0 || wicketsB > 0 ? 2 : 1);
     const battingTeam = currentInnings === 1 ? teamAName : teamBName;
     const battingRuns = currentInnings === 1 ? runsA : runsB;
     const battingWickets = currentInnings === 1 ? wicketsA : wicketsB;
@@ -54,12 +103,14 @@ export default function MultiSportScoreDisplay({
     const targetRuns = currentInnings === 2 ? runsA + 1 : null;
     const runsNeeded = targetRuns ? Math.max(0, targetRuns - runsB) : null;
 
+    const maxOvers = liveData?.totalOvers || liveData?.match?.totalOvers || 20;
+
     return (
       <div className="w-full rounded-2xl bg-gradient-to-b from-slate-900 via-slate-950 to-slate-950 border border-slate-800 p-4 sm:p-6 shadow-2xl space-y-4">
         {/* Header Badges */}
         <div className="flex items-center justify-between border-b border-slate-800/80 pb-3 text-xs font-extrabold uppercase">
           <span className="text-cyan-400 flex items-center gap-1.5">
-            <span>🏏</span> CRICKET INNINGS {currentInnings}
+            <span>🏏</span> CRICKET INNINGS {currentInnings} ({maxOvers} OVERS MATCH)
           </span>
           <span className="text-emerald-400 bg-emerald-950/80 px-2.5 py-0.5 rounded-full border border-emerald-500/30 font-mono">
             ● LIVE SCORE
@@ -73,7 +124,7 @@ export default function MultiSportScoreDisplay({
               {teamAName}
             </h3>
             <p className="text-xs font-mono font-semibold text-slate-400">
-              {runsA}/{wicketsA} <span className="text-slate-500">({oversA} ov)</span>
+              {runsA}/{wicketsA} <span className="text-slate-500">({oversA}/{maxOvers} ov)</span>
             </p>
           </div>
 
@@ -82,7 +133,7 @@ export default function MultiSportScoreDisplay({
               {battingRuns}<span className="text-cyan-400 font-extrabold">/{battingWickets}</span>
             </div>
             <div className="text-xs font-mono font-bold text-amber-400">
-              {battingOvers} Overs
+              {battingOvers} / {maxOvers} Overs
             </div>
             {targetRuns && (
               <div className="text-[11px] font-bold text-rose-400">
@@ -104,9 +155,15 @@ export default function MultiSportScoreDisplay({
         {/* Target & Match Situation Banner */}
         <div className="rounded-xl bg-slate-900/90 border border-slate-800 p-2.5 text-center text-xs font-bold text-slate-300">
           {currentInnings === 2 && runsNeeded !== null ? (
-            <span className="text-emerald-400">
-              ⚡ {teamBName} need <span className="text-white font-mono text-sm underline">{runsNeeded}</span> runs to win
-            </span>
+            runsNeeded === 0 ? (
+              <span className="text-emerald-400 font-extrabold text-sm flex items-center justify-center gap-1.5 animate-pulse">
+                🏆 MATCH COMPLETED — {teamBName} won by chasing the target! ({runsB}/{wicketsB})
+              </span>
+            ) : (
+              <span className="text-emerald-400">
+                ⚡ {teamBName} need <span className="text-white font-mono text-sm underline">{runsNeeded}</span> runs to win
+              </span>
+            )
           ) : (
             <span className="text-cyan-300">
               🏏 1st Innings in progress — {battingTeam} Batting

@@ -45,13 +45,10 @@ export async function exportMatchReportCSV(match: any, initialLiveData?: any) {
 
   const teamAName = liveData?.teamA?.teamName || match.teamA?.name || match.teamAName || "Team A";
   const teamBName = liveData?.teamB?.teamName || match.teamB?.name || match.teamBName || "Team B";
-  const teamAId = liveData?.teamA?.teamId || match.teamA?.id || match.teamAId || "";
-  const teamBId = liveData?.teamB?.teamId || match.teamB?.id || match.teamBId || "";
+  const teamAId = liveData?.teamA?.teamId || match.teamA?.id || match.teamAId || "teamA";
+  const teamBId = liveData?.teamB?.teamId || match.teamB?.id || match.teamBId || "teamB";
 
-  const scoreA = liveData?.teamA?.score ?? match.result?.teamA?.score ?? match.teamA?.score ?? 0;
-  const scoreB = liveData?.teamB?.score ?? match.result?.teamB?.score ?? match.teamB?.score ?? 0;
-
-  // Extract events from liveData, match.events, or match.result.events
+  // Extract events source safely
   const rawEventsSource =
     liveData?.events ||
     liveData?.timeline ||
@@ -66,6 +63,45 @@ export async function exportMatchReportCSV(match: any, initialLiveData?: any) {
     ? rawEventsSource
     : Object.values(rawEventsSource);
 
+  // Compute final Team A and Team B scores strictly isolated by teamId & teamName
+  const scoreA = (() => {
+    if (rawEvents.length > 0) {
+      const goalCount = rawEvents.filter(
+        (ev: any) =>
+          ev.type === "goal" &&
+          (ev.teamId === teamAId ||
+            ev.teamId === liveData?.teamA?.teamId ||
+            ev.teamId === match.teamA?.id ||
+            (ev.teamName && teamAName && ev.teamName.toLowerCase().trim() === teamAName.toLowerCase().trim()))
+      ).length;
+      if (goalCount > 0) return goalCount;
+    }
+    return typeof liveData?.teamA?.score === "number"
+      ? liveData.teamA.score
+      : typeof liveData?.teamA?.score === "object"
+      ? (liveData.teamA.score.runs ?? liveData.teamA.score.score ?? 0)
+      : (match.result?.teamA?.score ?? match.teamA?.score ?? match.scoreTeamA ?? 0);
+  })();
+
+  const scoreB = (() => {
+    if (rawEvents.length > 0) {
+      const goalCount = rawEvents.filter(
+        (ev: any) =>
+          ev.type === "goal" &&
+          (ev.teamId === teamBId ||
+            ev.teamId === liveData?.teamB?.teamId ||
+            ev.teamId === match.teamB?.id ||
+            (ev.teamName && teamBName && ev.teamName.toLowerCase().trim() === teamBName.toLowerCase().trim()))
+      ).length;
+      if (goalCount > 0) return goalCount;
+    }
+    return typeof liveData?.teamB?.score === "number"
+      ? liveData.teamB.score
+      : typeof liveData?.teamB?.score === "object"
+      ? (liveData.teamB.score.runs ?? liveData.teamB.score.score ?? 0)
+      : (match.result?.teamB?.score ?? match.teamB?.score ?? match.scoreTeamB ?? 0);
+  })();
+
   rawEvents.sort((a: any, b: any) => (a.minute || 0) - (b.minute || 0));
 
   let winner = "Draw";
@@ -74,13 +110,24 @@ export async function exportMatchReportCSV(match: any, initialLiveData?: any) {
 
   const reportGeneratedAt = new Date().toLocaleString();
 
+  const sportNameStr = match.sportName || match.sport || "Football";
+  const isCricket = sportNameStr.toLowerCase().includes("cricket");
+  const totalOversConfig = match.totalOvers || liveData?.totalOvers || (match as any).totalOvers;
+
   const rows: string[][] = [
     ["ENERGY 2026 SPORTS TOURNAMENT — OFFICIAL MATCH REPORT"],
     ["Report Generated At", reportGeneratedAt],
     [],
     ["=== MATCH INFORMATION ==="],
     ["Match Code / ID", match.matchCode || match.id || "N/A"],
-    ["Sport Category", match.sportName || match.sport || "Football"],
+    ["Sport Category", sportNameStr],
+  ];
+
+  if (isCricket) {
+    rows.push(["Configured Match Overs", totalOversConfig ? `${totalOversConfig} Overs` : "20 Overs"]);
+  }
+
+  rows.push(
     ["Venue", match.venue || "Main Stadium"],
     ["Match Date", match.matchDate || "N/A"],
     ["Scheduled Start Time", match.startTime || "N/A"],
@@ -94,8 +141,8 @@ export async function exportMatchReportCSV(match: any, initialLiveData?: any) {
     ["Match Winner", winner],
     [],
     ["=== DETAILED EVENT HISTORY & TIMELINE ==="],
-    ["Event No.", "Match Minute", "Timestamp", "Event Type", "Team Name", "Player Name", "Assist By", "Description / Note", "Detailed Summary"],
-  ];
+    ["Event No.", "Match Minute", "Timestamp", "Event Type", "Team Name", "Player Name", "Assist By", "Description / Note", "Detailed Summary"]
+  );
 
   if (rawEvents.length === 0) {
     rows.push(["1", "N/A", "N/A", "NO EVENTS RECORDED", "N/A", "N/A", "N/A", "No events logged", "No live events logged for this match."]);

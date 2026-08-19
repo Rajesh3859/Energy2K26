@@ -118,8 +118,8 @@ export default function SportConsoleResolver({
               onChange={(e) => setEventTeamId(e.target.value)}
               className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
             >
-              <option value={teamAId}>{teamAName}</option>
-              <option value={teamBId}>{teamBName}</option>
+              <option value={teamAId}>{teamAName} (Home)</option>
+              <option value={teamBId}>{teamBName} (Away)</option>
             </select>
           </div>
 

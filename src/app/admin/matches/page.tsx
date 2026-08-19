@@ -45,6 +45,8 @@ export default function MatchesPage() {
     scheduledDateTime: new Date().toISOString().slice(0, 16),
     venue: "Main Stadium",
     halfDurationMinutes: 45,
+    totalOversOption: "20",
+    customOvers: "",
   });
 
   const [editForm, setEditForm] = useState({
@@ -57,6 +59,9 @@ export default function MatchesPage() {
     scorerEmail: "",
     scheduledDateTime: new Date().toISOString().slice(0, 16),
     halfDurationMinutes: 45,
+    totalOversOption: "20",
+    customOvers: "",
+    sportName: "",
   });
 
   useEffect(() => {
@@ -104,6 +109,8 @@ export default function MatchesPage() {
           teamBId: defaultTeamB?.id || "",
           teamBName: defaultTeamB?.name || defaultTeamB?.teamName || "",
           halfDurationMinutes: (defaultSport as any)?.halfDurationMinutes || 45,
+          totalOversOption: "20",
+          customOvers: "",
         };
       });
     } catch (err) {
@@ -129,6 +136,16 @@ export default function MatchesPage() {
 
     const [matchDate, startTime] = createForm.scheduledDateTime.split("T");
 
+    const isCricket = createForm.sportName?.toLowerCase().includes("cricket");
+    let finalTotalOvers: number | undefined = undefined;
+    if (isCricket) {
+      if (createForm.totalOversOption === "custom") {
+        finalTotalOvers = parseInt(createForm.customOvers) || 20;
+      } else {
+        finalTotalOvers = parseInt(createForm.totalOversOption) || 20;
+      }
+    }
+
     try {
       setSubmitting(true);
       await createMatch({
@@ -145,6 +162,7 @@ export default function MatchesPage() {
         startTime: startTime || "10:00",
         venue: createForm.venue,
         halfDurationMinutes: Number(createForm.halfDurationMinutes) || 45,
+        totalOvers: finalTotalOvers,
         status: "scheduled",
       } as any);
 
@@ -163,6 +181,8 @@ export default function MatchesPage() {
     const extractedTeamBId = (match as any).teamBId || match.teamB?.id || "";
     const existingDate = (match as any).matchDate || new Date().toISOString().slice(0, 10);
     const existingTime = (match as any).startTime || "10:00";
+    const existingOvers = match.totalOvers || (match as any).totalOvers || 20;
+    const isStandardOpt = ["5", "10", "15", "20"].includes(String(existingOvers));
 
     setEditingMatch(match);
     setEditForm({
@@ -175,6 +195,9 @@ export default function MatchesPage() {
       scorerEmail: match.scorerEmail || "",
       scheduledDateTime: `${existingDate}T${existingTime}`,
       halfDurationMinutes: (match as any).halfDurationMinutes || 45,
+      totalOversOption: isStandardOpt ? String(existingOvers) : "custom",
+      customOvers: isStandardOpt ? "" : String(existingOvers),
+      sportName: match.sportName || match.sport || "",
     });
   }
 
@@ -183,12 +206,19 @@ export default function MatchesPage() {
     if (!editingMatch) return;
 
     const [matchDate, startTime] = editForm.scheduledDateTime.split("T");
+    const isCricket = (editForm.sportName || editingMatch.sportName || editingMatch.sport)?.toLowerCase().includes("cricket");
 
     const payload: any = {
       venue: editForm.venue,
       status: editForm.status,
       halfDurationMinutes: Number(editForm.halfDurationMinutes) || 45,
     };
+
+    if (isCricket) {
+      payload.totalOvers = editForm.totalOversOption === "custom"
+        ? parseInt(editForm.customOvers) || 20
+        : parseInt(editForm.totalOversOption) || 20;
+    }
 
     if (matchDate) payload.matchDate = matchDate;
     if (startTime) payload.startTime = startTime;
@@ -265,12 +295,24 @@ export default function MatchesPage() {
     },
     {
       key: "sport",
-      label: "Sport",
-      render: (match) => (
-        <span className="text-slate-600">
-          {match.sportName || match.sport}
-        </span>
-      ),
+      label: "Sport / Rules",
+      render: (match) => {
+        const isCricket = (match.sportName || match.sport)?.toLowerCase().includes("cricket");
+        const overs = match.totalOvers || (match as any).totalOvers;
+
+        return (
+          <div className="flex flex-col">
+            <span className="text-slate-700 font-medium">
+              {match.sportName || match.sport}
+            </span>
+            {isCricket && (
+              <span className="text-[11px] font-bold text-cyan-600">
+                🏏 {overs ? `${overs} Overs Match` : "20 Overs"}
+              </span>
+            )}
+          </div>
+        );
+      },
     },
     {
       key: "scorer",
@@ -417,6 +459,255 @@ export default function MatchesPage() {
               ))}
             </select>
           </div>
+
+          {/* 🏏 CRICKET-ONLY OVER CUSTOMIZATION FIELD */}
+          {createForm.sportName?.toLowerCase().includes("cricket") && (
+            <div className="rounded-xl border border-cyan-200 bg-cyan-50/50 p-3.5 space-y-2">
+              <label className="block text-xs font-bold text-cyan-900 uppercase tracking-wider">
+                🏏 Customize Cricket Match Overs
+              </label>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <select
+                    value={createForm.totalOversOption}
+                    onChange={(e) => setCreateForm({ ...createForm, totalOversOption: e.target.value })}
+                    className="w-full rounded-lg border border-cyan-300 bg-white p-2 text-sm font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                  >
+                    <option value="5">5 Overs</option>
+                    <option value="10">10 Overs</option>
+                    <option value="15">15 Overs</option>
+                    <option value="20">20 Overs (T20 Standard)</option>
+                    <option value="custom">Custom Overs</option>
+                  </select>
+                </div>
+
+                {createForm.totalOversOption === "custom" && (
+                  <div>
+                    <input
+                      type="number"
+                      min={1}
+                      max={100}
+                      required
+                      placeholder="e.g. 8"
+                      value={createForm.customOvers}
+                      onChange={(e) => setCreateForm({ ...createForm, customOvers: e.target.value })}
+                      className="w-full rounded-lg border border-cyan-300 bg-white p-2 text-sm font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                    />
+                  </div>
+                )}
+              </div>
+              <p className="text-[11px] text-cyan-700 font-medium">
+                This setting configures maximum overs per innings specifically for this Cricket fixture.
+              </p>
+            </div>
+          )}
+
+          {/* Dynamic Sport-Filtered Teams Selection */}
+          {(() => {
+            const availableTeams = teams.filter((t) => !t.sportId || t.sportId === createForm.sportId);
+
+            return (
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1">Team A</label>
+                  <select
+                    value={createForm.teamAId}
+                    onChange={(e) => {
+                      const selected = teams.find((t) => t.id === e.target.value);
+                      setCreateForm({
+                        ...createForm,
+                        teamAId: e.target.value,
+                        teamAName: selected ? selected.name || selected.teamName || "" : "",
+                      });
+                    }}
+                    className="w-full rounded-lg border bg-white p-2.5 text-sm font-medium text-slate-900"
+                    required
+                  >
+                    <option value="">Select Team A</option>
+                    {availableTeams.map((t) => (
+                      <option key={t.id} value={t.id}>
+                        {t.name || t.teamName}
+                      </option>
+                    ))}
+                  </select>
+                  {availableTeams.length === 0 && (
+                    <p className="mt-1 text-xs text-amber-600 font-medium">
+                      ⚠️ No teams registered for this sport yet.
+                    </p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-1">Team B</label>
+                  <select
+                    value={createForm.teamBId}
+                    onChange={(e) => {
+                      const selected = teams.find((t) => t.id === e.target.value);
+                      setCreateForm({
+                        ...createForm,
+                        teamBId: e.target.value,
+                        teamBName: selected ? selected.name || selected.teamName || "" : "",
+                      });
+                    }}
+                    className="w-full rounded-lg border bg-white p-2.5 text-sm font-medium text-slate-900"
+                    required
+                  >
+                    <option value="">Select Team B</option>
+                    {availableTeams
+                      .filter((t) => t.id !== createForm.teamAId)
+                      .map((t) => (
+                        <option key={t.id} value={t.id}>
+                          {t.name || t.teamName}
+                        </option>
+                      ))}
+                  </select>
+                </div>
+              </div>
+            );
+          })()}
+
+          {/* Assigned Scorer Selection */}
+          <div>
+            <label className="block text-sm font-medium mb-1">Assign Scorer</label>
+            <select
+              value={createForm.scorerId}
+              onChange={(e) => {
+                const u = eligibleScorers.find((x) => x.uid === e.target.value);
+                setCreateForm({
+                  ...createForm,
+                  scorerId: e.target.value,
+                  scorerName: u ? u.displayName || (u as any).name || u.email || "" : "",
+                  scorerEmail: u ? u.email || "" : "",
+                });
+              }}
+              className="w-full rounded-lg border bg-white p-2.5 text-sm font-medium text-slate-900"
+            >
+              <option value="">-- Unassigned (Any Scorer) --</option>
+              {eligibleScorers.map((sc) => (
+                <option key={sc.uid} value={sc.uid}>
+                  {sc.displayName || (sc as any).name || sc.email} ({sc.email})
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium mb-1">Venue</label>
+              <input
+                type="text"
+                required
+                value={createForm.venue}
+                onChange={(e) => setCreateForm({ ...createForm, venue: e.target.value })}
+                placeholder="Main Stadium"
+                className="w-full rounded-lg border p-2.5 text-sm"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-1">Match Duration (Minutes)</label>
+              <input
+                type="number"
+                min={1}
+                max={120}
+                required
+                value={createForm.halfDurationMinutes}
+                onChange={(e) => setCreateForm({ ...createForm, halfDurationMinutes: e.target.value === "" ? ("" as any) : parseInt(e.target.value) })}
+                placeholder="45"
+                className="w-full rounded-lg border p-2.5 text-sm font-semibold"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-1">Date & Time</label>
+            <input
+              type="datetime-local"
+              required
+              value={createForm.scheduledDateTime}
+              onChange={(e) => setCreateForm({ ...createForm, scheduledDateTime: e.target.value })}
+              className="w-full rounded-lg border p-2.5 text-sm"
+            />
+          </div>
+
+          <div className="flex justify-end gap-3 pt-3 border-t">
+            <button
+              type="button"
+              onClick={() => setShowCreateModal(false)}
+              className="rounded-lg border px-4 py-2 text-sm font-medium"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={submitting}
+              className="rounded-lg bg-black px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
+            >
+              {submitting ? "Scheduling..." : "Schedule Match"}
+            </button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* Edit Modal */}
+      <Modal
+        isOpen={!!editingMatch}
+        onClose={() => setEditingMatch(null)}
+        title="Edit Match Details"
+      >
+        <form onSubmit={handleUpdateMatch} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium mb-1">Status</label>
+            <select
+              value={editForm.status}
+              onChange={(e) => setEditForm({ ...editForm, status: e.target.value })}
+              className="w-full rounded-lg border bg-white p-2.5 text-sm uppercase font-semibold"
+            >
+              <option value="scheduled">Scheduled</option>
+              <option value="live">Live</option>
+              <option value="completed">Completed</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
+          </div>
+
+          {/* 🏏 CRICKET-ONLY EDIT OVER CUSTOMIZATION FIELD */}
+          {(editForm.sportName || editingMatch?.sportName || editingMatch?.sport)?.toLowerCase().includes("cricket") && (
+            <div className="rounded-xl border border-cyan-200 bg-cyan-50/50 p-3.5 space-y-2">
+              <label className="block text-xs font-bold text-cyan-900 uppercase tracking-wider">
+                🏏 Customize Cricket Match Overs
+              </label>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <select
+                    value={editForm.totalOversOption}
+                    onChange={(e) => setEditForm({ ...editForm, totalOversOption: e.target.value })}
+                    className="w-full rounded-lg border border-cyan-300 bg-white p-2 text-sm font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                  >
+                    <option value="5">5 Overs</option>
+                    <option value="10">10 Overs</option>
+                    <option value="15">15 Overs</option>
+                    <option value="20">20 Overs (T20 Standard)</option>
+                    <option value="custom">Custom Overs</option>
+                  </select>
+                </div>
+
+                {editForm.totalOversOption === "custom" && (
+                  <div>
+                    <input
+                      type="number"
+                      min={1}
+                      max={100}
+                      required
+                      placeholder="e.g. 8"
+                      value={editForm.customOvers}
+                      onChange={(e) => setEditForm({ ...editForm, customOvers: e.target.value })}
+                      className="w-full rounded-lg border border-cyan-300 bg-white p-2 text-sm font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* Dynamic Sport-Filtered Teams Selection */}
           {(() => {

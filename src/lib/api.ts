@@ -98,7 +98,11 @@ export async function apiRequest(
   }
 
   if (!response.ok) {
-    throw new Error(data?.message || "API request failed");
+    const errorMsg = data?.message || `Server returned ${response.status} ${response.statusText}`;
+    if (response.status === 404) {
+      throw new Error(`404 Not Found: ${errorMsg}`);
+    }
+    throw new Error(errorMsg);
   }
 
   return data;

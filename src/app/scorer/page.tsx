@@ -47,10 +47,50 @@ export default function ScorerPage() {
   // Derived Safe Team & Score Properties
   const teamAName = liveData?.teamA?.teamName || selectedMatch?.teamA?.name || (selectedMatch as any)?.teamAName || "Team A";
   const teamBName = liveData?.teamB?.teamName || selectedMatch?.teamB?.name || (selectedMatch as any)?.teamBName || "Team B";
-  const teamAId = liveData?.teamA?.teamId || selectedMatch?.teamA?.id || (selectedMatch as any)?.teamAId || "";
-  const teamBId = liveData?.teamB?.teamId || selectedMatch?.teamB?.id || (selectedMatch as any)?.teamBId || "";
-  const scoreA = liveData?.teamA?.score ?? (selectedMatch as any)?.result?.teamA?.score ?? 0;
-  const scoreB = liveData?.teamB?.score ?? (selectedMatch as any)?.result?.teamB?.score ?? 0;
+  const teamAId = liveData?.teamA?.teamId || selectedMatch?.teamA?.id || (selectedMatch as any)?.teamAId || "teamA";
+  const teamBId = liveData?.teamB?.teamId || selectedMatch?.teamB?.id || (selectedMatch as any)?.teamBId || "teamB";
+
+  const scoreA = (() => {
+    if (liveData?.events) {
+      const evList = Object.values(liveData.events) as any[];
+      const goalCount = evList.filter(
+        (ev) =>
+          ev.type === "goal" &&
+          (ev.teamId === teamAId ||
+            ev.teamId === liveData?.teamA?.teamId ||
+            ev.teamId === selectedMatch?.teamA?.id ||
+            ev.teamId === (selectedMatch as any)?.teamAId ||
+            (ev.teamName && teamAName && ev.teamName.toLowerCase().trim() === teamAName.toLowerCase().trim()))
+      ).length;
+      if (goalCount > 0) return goalCount;
+    }
+    return typeof liveData?.teamA?.score === "number"
+      ? liveData.teamA.score
+      : typeof liveData?.teamA?.score === "object"
+      ? (liveData.teamA.score.runs ?? liveData.teamA.score.score ?? 0)
+      : (liveData?.scoreTeamA ?? (selectedMatch as any)?.result?.teamA?.score ?? 0);
+  })();
+
+  const scoreB = (() => {
+    if (liveData?.events) {
+      const evList = Object.values(liveData.events) as any[];
+      const goalCount = evList.filter(
+        (ev) =>
+          ev.type === "goal" &&
+          (ev.teamId === teamBId ||
+            ev.teamId === liveData?.teamB?.teamId ||
+            ev.teamId === selectedMatch?.teamB?.id ||
+            ev.teamId === (selectedMatch as any)?.teamBId ||
+            (ev.teamName && teamBName && ev.teamName.toLowerCase().trim() === teamBName.toLowerCase().trim()))
+      ).length;
+      if (goalCount > 0) return goalCount;
+    }
+    return typeof liveData?.teamB?.score === "number"
+      ? liveData.teamB.score
+      : typeof liveData?.teamB?.score === "object"
+      ? (liveData.teamB.score.runs ?? liveData.teamB.score.score ?? 0)
+      : (liveData?.scoreTeamB ?? (selectedMatch as any)?.result?.teamB?.score ?? 0);
+  })();
 
   const currentUser = auth.currentUser;
 
@@ -66,6 +106,13 @@ export default function ScorerPage() {
   useEffect(() => {
     loadMatchesList();
   }, []);
+
+  // Synchronize eventTeamId default whenever selectedMatch or liveData changes
+  useEffect(() => {
+    if (teamAId && (!eventTeamId || (eventTeamId !== teamAId && eventTeamId !== teamBId))) {
+      setEventTeamId(teamAId);
+    }
+  }, [selectedMatch?.id, liveData?.teamA?.teamId, liveData?.teamB?.teamId, teamAId, teamBId]);
 
   // Firebase Realtime Database Listener for All Matches Status Sync (Zero Polling)
   useEffect(() => {
@@ -102,12 +149,6 @@ export default function ScorerPage() {
 
     const unsubscribe = subscribeToLiveMatch(matchId, (data) => {
       setLiveData(data);
-      if (data) {
-        const tAId = data.teamA?.teamId || selectedMatch.teamA?.id || (selectedMatch as any)?.teamAId;
-        if (tAId && !eventTeamId) {
-          setEventTeamId(tAId);
-        }
-      }
     });
 
     return () => {
@@ -115,11 +156,11 @@ export default function ScorerPage() {
     };
   }, [selectedMatch?.id]);
 
-  // Real-time Match Clock Ticker with Dynamic Admin-Configured Sport Duration & Pause/Resume Support
+  // Real-time Match Clock Ticker with Dynamic Admin-Configured Sport Duration & Automatic Limit Capping
   useEffect(() => {
     if (!liveData) return;
 
-    // Default to 45 minutes per half if not set by admin
+    // Default to 45 minutes per half if not set by admin (or admin-configured value e.g. 15 mins)
     const halfMins = liveData.halfDurationMinutes || liveData.halfDuration || (selectedMatch as any)?.halfDurationMinutes || (selectedMatch as any)?.halfDuration || 45;
     const halfSecs = halfMins * 60;
     const fullSecs = halfSecs * 2;
@@ -132,26 +173,28 @@ export default function ScorerPage() {
         const pausedSecs = liveData.totalPausedSeconds || 0;
         if (liveData.half === 2 && liveData.secondHalfStartedAt) {
           const diffSec = Math.max(0, Math.floor((now - liveData.secondHalfStartedAt) / 1000) - pausedSecs);
-          const currentTotal = halfSecs + diffSec;
+          const currentTotal = Math.min(fullSecs, halfSecs + diffSec); // Cap at 2nd half duration limit
           setElapsedSeconds(currentTotal);
-          setEventMinute(Math.min(halfMins * 2 + 30, Math.floor(currentTotal / 60) + 1));
+          setEventMinute(Math.min(halfMins * 2, Math.floor(currentTotal / 60) + 1));
         } else if (liveData.firstHalfStartedAt) {
           const diffSec = Math.max(0, Math.floor((now - liveData.firstHalfStartedAt) / 1000) - pausedSecs);
-          setElapsedSeconds(diffSec);
-          setEventMinute(Math.min(halfMins, Math.floor(diffSec / 60) + 1));
+          const currentTotal = Math.min(halfSecs, diffSec); // Cap at 1st half duration limit (e.g. 15 mins)
+          setElapsedSeconds(currentTotal);
+          setEventMinute(Math.min(halfMins, Math.floor(currentTotal / 60) + 1));
         }
       } else if (status === "paused") {
         const pausedSecs = liveData.totalPausedSeconds || 0;
         const freezePoint = liveData.pausedAt || now;
         if (liveData.half === 2 && liveData.secondHalfStartedAt) {
           const diffSec = Math.max(0, Math.floor((freezePoint - liveData.secondHalfStartedAt) / 1000) - pausedSecs);
-          const currentTotal = halfSecs + diffSec;
+          const currentTotal = Math.min(fullSecs, halfSecs + diffSec);
           setElapsedSeconds(currentTotal);
-          setEventMinute(Math.min(halfMins * 2 + 30, Math.floor(currentTotal / 60) + 1));
+          setEventMinute(Math.min(halfMins * 2, Math.floor(currentTotal / 60) + 1));
         } else if (liveData.firstHalfStartedAt) {
           const diffSec = Math.max(0, Math.floor((freezePoint - liveData.firstHalfStartedAt) / 1000) - pausedSecs);
-          setElapsedSeconds(diffSec);
-          setEventMinute(Math.min(halfMins, Math.floor(diffSec / 60) + 1));
+          const currentTotal = Math.min(halfSecs, diffSec);
+          setElapsedSeconds(currentTotal);
+          setEventMinute(Math.min(halfMins, Math.floor(currentTotal / 60) + 1));
         }
       } else if (status === "half_time") {
         setElapsedSeconds(halfSecs);
@@ -209,13 +252,6 @@ export default function ScorerPage() {
       const res = await getLiveScore(matchId);
       const data = res.data || null;
       setLiveData(data);
-
-      if (data && selectedMatch) {
-        const tAId = data.teamA?.teamId || selectedMatch.teamA?.id || (selectedMatch as any)?.teamAId;
-        if (tAId && !eventTeamId) {
-          setEventTeamId(tAId);
-        }
-      }
     } catch (err) {
       console.error(err);
       setLiveData(null);
@@ -226,14 +262,64 @@ export default function ScorerPage() {
     if (!selectedMatch) return;
     try {
       setActionLoading(true);
-      const res = await initializeLiveMatch(selectedMatch.id);
+      const res = await initializeLiveMatch(selectedMatch.id, selectedMatch);
       if (res && res.data) {
         setLiveData(res.data);
       } else {
         await loadLiveScoreDataHttp(selectedMatch.id);
       }
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Failed to initialize match");
+      console.warn("Backend initialization fallback check:", err);
+      // Client-side RTDB Sport-Specific Initialization Fallback
+      const sportStr = (selectedMatch.sportName || selectedMatch.sport || "").toLowerCase();
+      const isCricket = sportStr.includes("cricket");
+      const configuredOvers = selectedMatch.totalOvers || (selectedMatch as any).totalOvers || 20;
+
+      const teamAName = selectedMatch.teamA?.name || (selectedMatch as any).teamAName || "Team A";
+      const teamBName = selectedMatch.teamB?.name || (selectedMatch as any).teamBName || "Team B";
+      const teamAId = selectedMatch.teamA?.id || (selectedMatch as any).teamAId || "teamA";
+      const teamBId = selectedMatch.teamB?.id || (selectedMatch as any).teamBId || "teamB";
+
+      const initialSportData: any = {
+        matchId: selectedMatch.id,
+        sportCode: isCricket ? "cricket" : "football",
+        sportName: selectedMatch.sportName || selectedMatch.sport || "Football",
+        status: "not_started",
+        totalOvers: isCricket ? configuredOvers : undefined,
+        currentInnings: isCricket ? 1 : undefined,
+        currentOver: isCricket ? 0 : undefined,
+        teamA: {
+          teamId: teamAId,
+          teamName: teamAName,
+          score: isCricket ? { runs: 0, wickets: 0, overs: "0.0", legalBalls: 0 } : 0,
+        },
+        teamB: {
+          teamId: teamBId,
+          teamName: teamBName,
+          score: isCricket ? { runs: 0, wickets: 0, overs: "0.0", legalBalls: 0 } : 0,
+        },
+        events: {},
+        updatedAt: Date.now(),
+      };
+
+      if (isCricket) {
+        initialSportData.sportState = {
+          innings: 1,
+          runs: 0,
+          wickets: 0,
+          legalBalls: 0,
+          overs: "0.0",
+          maxOvers: configuredOvers,
+          battingTeamId: teamAId,
+          bowlingTeamId: teamBId,
+          striker: null,
+          nonStriker: null,
+          bowler: null,
+          isCompleted: false,
+        };
+      }
+
+      setLiveData(initialSportData);
     } finally {
       setActionLoading(false);
     }
@@ -278,13 +364,47 @@ export default function ScorerPage() {
     if (!selectedMatch) return;
     try {
       setActionLoading(true);
-      const targetTeamId = eventTeamId || teamAId || "team-a";
-      const targetTeamName = targetTeamId === teamAId ? teamAName : teamBName;
-      const nowIso = new Date().toISOString();
 
-      await createFootballEvent(selectedMatch.id, {
+      // Selected team ID from state or default teamAId
+      const targetTeamId = (eventTeamId || teamAId)?.toString().trim();
+
+      const normalizedTeamAId = teamAId?.toString().trim();
+      const normalizedTeamBId = teamBId?.toString().trim();
+
+      // Explicit match check
+      const isTeamA =
+        targetTeamId === normalizedTeamAId ||
+        targetTeamId === liveData?.teamA?.teamId ||
+        targetTeamId === selectedMatch?.teamA?.id ||
+        targetTeamId === (selectedMatch as any)?.teamAId;
+
+      const isTeamB =
+        targetTeamId === normalizedTeamBId ||
+        targetTeamId === liveData?.teamB?.teamId ||
+        targetTeamId === selectedMatch?.teamB?.id ||
+        targetTeamId === (selectedMatch as any)?.teamBId;
+
+      const targetSport = (selectedMatch as any)?.sportName || (selectedMatch as any)?.sportCode || (selectedMatch as any)?.sport || liveData?.sportName || "Football";
+      const isSpecializedSport = targetSport.toLowerCase().includes("cricket") || targetSport.toLowerCase().includes("basketball") || targetSport.toLowerCase().includes("volleyball");
+
+      // Validation check: if targetTeamId is missing, invalid, or does not match Team A or Team B
+      if (!isTeamA && !isTeamB && !isSpecializedSport) {
+        alert(
+          `❌ Invalid Team Selection: The selected team ID ("${targetTeamId}") does not match Team A ("${normalizedTeamAId}") or Team B ("${normalizedTeamBId}"). No score has been updated.`
+        );
+        setActionLoading(false);
+        return;
+      }
+
+      const finalTeamId = isTeamA ? normalizedTeamAId : normalizedTeamBId;
+      const targetTeamName = isTeamA ? teamAName : teamBName;
+      const nowIso = new Date().toISOString();
+      const eventId = `optimistic_${Date.now()}`;
+
+      const newEvent = {
+        id: eventId,
         type: eventType,
-        teamId: targetTeamId,
+        teamId: finalTeamId,
         teamName: targetTeamName,
         minute: eventMinute,
         playerName: playerName || undefined,
@@ -293,15 +413,58 @@ export default function ScorerPage() {
         note: description || undefined,
         timestamp: Date.now(),
         createdAt: nowIso,
+      };
+
+      // ⚡ SENIOR DEV OPTIMISTIC UI UPDATE (< 5ms response time)
+      setLiveData((prevLive: any) => {
+        const existingEvents = prevLive?.events
+          ? Array.isArray(prevLive.events)
+            ? prevLive.events
+            : Object.values(prevLive.events)
+          : [];
+
+        const updatedEvents = [newEvent, ...existingEvents];
+
+        return {
+          ...prevLive,
+          events: updatedEvents,
+          updatedAt: Date.now(),
+        };
       });
 
+      // Clear input fields immediately for seamless user experience
       setPlayerName("");
       setAssistPlayerName("");
       setDescription("");
-      await loadLiveScoreDataHttp(selectedMatch.id);
+      setActionLoading(false);
+
+      // 🚀 ASYNC BACKGROUND NETWORK SYNC (Non-blocking call)
+      (async () => {
+        try {
+          const payload = {
+            type: eventType,
+            teamId: finalTeamId,
+            teamName: targetTeamName,
+            minute: eventMinute,
+            playerName: newEvent.playerName,
+            assistPlayerName: newEvent.assistPlayerName,
+            description: newEvent.description,
+            note: newEvent.note,
+            timestamp: newEvent.timestamp,
+            createdAt: nowIso,
+          };
+          console.log("⚽ Background Async Sync Event Payload:", payload);
+          await createFootballEvent(selectedMatch.id, payload);
+          // Silent refresh from source of truth
+          loadLiveScoreDataHttp(selectedMatch.id);
+        } catch (syncErr) {
+          console.error("❌ Background Event Sync Error:", syncErr);
+          // Rollback on server rejection
+          loadLiveScoreDataHttp(selectedMatch.id);
+        }
+      })();
     } catch (err) {
       alert(err instanceof Error ? err.message : "Failed to record event");
-    } finally {
       setActionLoading(false);
     }
   }
@@ -644,7 +807,9 @@ export default function ScorerPage() {
                 <SportConsoleResolver
                   match={selectedMatch}
                   liveData={liveData}
-                  onEventAdded={loadMatchesList}
+                  onEventAdded={() => {
+                    if (selectedMatch?.id) loadLiveScoreDataHttp(selectedMatch.id);
+                  }}
                   eventType={eventType}
                   setEventType={setEventType}
                   eventTeamId={eventTeamId}
@@ -677,13 +842,14 @@ export default function ScorerPage() {
                   </div>
                 ) : (
                   <div className="space-y-3 max-h-[550px] overflow-y-auto pr-1">
-                    {eventsList.map((ev: any) => {
+                    {eventsList.map((ev: any, idx: number) => {
                       const isTeamA = ev.teamId === teamAId;
                       const name = ev.teamName || (isTeamA ? teamAName : teamBName);
+                      const itemKey = ev.id || ev.timestamp || `event_${idx}`;
 
                       return (
                         <div
-                          key={ev.id}
+                          key={itemKey}
                           className="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-950/70 p-3 text-sm"
                         >
                           <div className="flex items-center gap-3">

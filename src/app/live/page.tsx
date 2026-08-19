@@ -171,7 +171,50 @@ export default function LivePage() {
               {liveMatches.map((match) => {
                 const teamA = match.teamA || {};
                 const teamB = match.teamB || {};
-                const events = match.events ? Object.values(match.events) : [];
+                const teamAName = teamA.teamName || match.teamA?.name || match.teamAName || "Team A";
+                const teamBName = teamB.teamName || match.teamB?.name || match.teamBName || "Team B";
+                const teamAId = teamA.teamId || match.teamA?.id || match.teamAId || "teamA";
+                const teamBId = teamB.teamId || match.teamB?.id || match.teamBId || "teamB";
+
+                const eventsList = match.events ? (Array.isArray(match.events) ? match.events : Object.values(match.events)) : [];
+
+                const scoreA = (() => {
+                  if (eventsList.length > 0) {
+                    const goalCount = eventsList.filter(
+                      (ev: any) =>
+                        ev.type === "goal" &&
+                        (ev.teamId === teamAId ||
+                          ev.teamId === teamA.teamId ||
+                          ev.teamId === match.teamA?.id ||
+                          (ev.teamName && teamAName && ev.teamName.toLowerCase().trim() === teamAName.toLowerCase().trim()))
+                    ).length;
+                    if (goalCount > 0) return goalCount;
+                  }
+                  return typeof teamA.score === "number"
+                    ? teamA.score
+                    : typeof teamA.score === "object"
+                    ? (teamA.score?.runs ?? teamA.score?.score ?? 0)
+                    : (match.scoreTeamA ?? 0);
+                })();
+
+                const scoreB = (() => {
+                  if (eventsList.length > 0) {
+                    const goalCount = eventsList.filter(
+                      (ev: any) =>
+                        ev.type === "goal" &&
+                        (ev.teamId === teamBId ||
+                          ev.teamId === teamB.teamId ||
+                          ev.teamId === match.teamB?.id ||
+                          (ev.teamName && teamBName && ev.teamName.toLowerCase().trim() === teamBName.toLowerCase().trim()))
+                    ).length;
+                    if (goalCount > 0) return goalCount;
+                  }
+                  return typeof teamB.score === "number"
+                    ? teamB.score
+                    : typeof teamB.score === "object"
+                    ? (teamB.score?.runs ?? teamB.score?.score ?? 0)
+                    : (match.scoreTeamB ?? 0);
+                })();
 
                 return (
                   <MatchCard
@@ -179,11 +222,11 @@ export default function LivePage() {
                     sportName={match.sportName || "Football"}
                     sportCode={match.sportCode || match.sport}
                     status={match.status}
-                    teamAName={teamA.teamName || "Team A"}
-                    teamBName={teamB.teamName || "Team B"}
-                    scoreA={teamA.score ?? 0}
-                    scoreB={teamB.score ?? 0}
-                    eventsCount={events.length}
+                    teamAName={teamAName}
+                    teamBName={teamBName}
+                    scoreA={scoreA}
+                    scoreB={scoreB}
+                    eventsCount={eventsList.length}
                     liveData={match}
                     onClick={() => openMatchDetails(match.matchId || match.id)}
                   />
@@ -203,15 +246,66 @@ export default function LivePage() {
           maxWidth="lg"
         >
           <div className="text-slate-100 space-y-6">
-            <MultiSportScoreDisplay
-              sportCode={selectedMatch.sportCode || selectedMatch.sport}
-              sportName={selectedMatch.sportName || "Football"}
-              teamAName={selectedMatch.teamA?.teamName || "Team A"}
-              teamBName={selectedMatch.teamB?.teamName || "Team B"}
-              scoreA={selectedMatch.teamA?.score ?? 0}
-              scoreB={selectedMatch.teamB?.score ?? 0}
-              liveData={selectedMatch}
-            />
+            {(() => {
+              const teamA = selectedMatch.teamA || {};
+              const teamB = selectedMatch.teamB || {};
+              const teamAName = teamA.teamName || selectedMatch.teamA?.name || selectedMatch.teamAName || "Team A";
+              const teamBName = teamB.teamName || selectedMatch.teamB?.name || selectedMatch.teamBName || "Team B";
+              const teamAId = teamA.teamId || selectedMatch.teamA?.id || selectedMatch.teamAId || "teamA";
+              const teamBId = teamB.teamId || selectedMatch.teamB?.id || selectedMatch.teamBId || "teamB";
+
+              const eventsList = selectedMatch.events ? (Array.isArray(selectedMatch.events) ? selectedMatch.events : Object.values(selectedMatch.events)) : [];
+
+              const modalScoreA = (() => {
+                if (eventsList.length > 0) {
+                  const goalCount = eventsList.filter(
+                    (ev: any) =>
+                      ev.type === "goal" &&
+                      (ev.teamId === teamAId ||
+                        ev.teamId === teamA.teamId ||
+                        ev.teamId === selectedMatch.teamA?.id ||
+                        (ev.teamName && teamAName && ev.teamName.toLowerCase().trim() === teamAName.toLowerCase().trim()))
+                  ).length;
+                  if (goalCount > 0) return goalCount;
+                }
+                return typeof teamA.score === "number"
+                  ? teamA.score
+                  : typeof teamA.score === "object"
+                  ? (teamA.score?.runs ?? teamA.score?.score ?? 0)
+                  : (selectedMatch.scoreTeamA ?? 0);
+              })();
+
+              const modalScoreB = (() => {
+                if (eventsList.length > 0) {
+                  const goalCount = eventsList.filter(
+                    (ev: any) =>
+                      ev.type === "goal" &&
+                      (ev.teamId === teamBId ||
+                        ev.teamId === teamB.teamId ||
+                        ev.teamId === selectedMatch.teamB?.id ||
+                        (ev.teamName && teamBName && ev.teamName.toLowerCase().trim() === teamBName.toLowerCase().trim()))
+                  ).length;
+                  if (goalCount > 0) return goalCount;
+                }
+                return typeof teamB.score === "number"
+                  ? teamB.score
+                  : typeof teamB.score === "object"
+                  ? (teamB.score?.runs ?? teamB.score?.score ?? 0)
+                  : (selectedMatch.scoreTeamB ?? 0);
+              })();
+
+              return (
+                <MultiSportScoreDisplay
+                  sportCode={selectedMatch.sportCode || selectedMatch.sport}
+                  sportName={selectedMatch.sportName || "Football"}
+                  teamAName={teamAName}
+                  teamBName={teamBName}
+                  scoreA={modalScoreA}
+                  scoreB={modalScoreB}
+                  liveData={selectedMatch}
+                />
+              );
+            })()}
 
             <h4 className="font-bold text-sm text-slate-300 mb-3 uppercase tracking-wider">
               Live Event Feed

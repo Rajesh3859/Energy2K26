@@ -20,6 +20,7 @@ export interface Match {
   startTime: string;
   venue?: string;
   halfDurationMinutes?: number;
+  totalOvers?: number;
   winnerId?: string;
   scorerId?: string;
   scorerName?: string;

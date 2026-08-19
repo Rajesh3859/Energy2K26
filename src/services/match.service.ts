@@ -13,6 +13,7 @@ export interface CreateMatchData {
   startTime: string;
   venue: string;
   halfDurationMinutes?: number;
+  totalOvers?: number;
   status?: string;
 }
 

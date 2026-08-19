@@ -68,9 +68,10 @@ export async function getLiveScore(
   }
 }
 
-export async function initializeLiveMatch(matchId: string): Promise<{ success?: boolean; data: LiveMatchData }> {
+export async function initializeLiveMatch(matchId: string, matchData?: any): Promise<{ success?: boolean; data: LiveMatchData }> {
   return apiRequest(`/live-matches/${matchId}/initialize`, {
     method: "POST",
+    body: JSON.stringify(matchData || {}),
   });
 }
 
