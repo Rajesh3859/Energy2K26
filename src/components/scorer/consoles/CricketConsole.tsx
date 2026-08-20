@@ -22,7 +22,7 @@ export default function CricketConsole({ match, liveData, onEventAdded }: Cricke
   const teamAId = (liveData?.teamA?.teamId || match?.teamA?.id || (match as any)?.teamAId || "teamA")?.toString();
   const teamBId = (liveData?.teamB?.teamId || match?.teamB?.id || (match as any)?.teamBId || "teamB")?.toString();
 
-  const currentInnings = liveData?.sportState?.innings || liveData?.currentInnings || 1;
+  const currentInnings = liveData?.sportState?.innings || 1;
   const defaultBattingTeamId =
     liveData?.sportState?.battingTeamId ||
     (currentInnings === 2 ? teamBId : teamAId);
@@ -93,15 +93,12 @@ export default function CricketConsole({ match, liveData, onEventAdded }: Cricke
             : undefined,
       };
 
-      console.log(
-        "Sending Cricket Action:",
-        cricketPayload
-      );
-
-      await cricketAction(
+      const result = await cricketAction(
         matchId,
         cricketPayload
       );
+
+      console.log("Cricket updated:", result);
 
       // Check target completion in 2nd Innings
       if (currentInnings === 2) {
