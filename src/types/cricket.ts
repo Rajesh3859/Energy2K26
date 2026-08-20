@@ -32,6 +32,8 @@ export interface CricketActionPayload {
   nonStriker?: string;
   bowler?: string;
   battingTeamId?: string;
+  teamId?: string;
+  teamName?: string;
   bowlerName?: string;
   strikerName?: string;
   nonStrikerName?: string;
