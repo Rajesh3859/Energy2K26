@@ -80,6 +80,7 @@ export default function CricketConsole({ match, liveData, onEventAdded }: Cricke
             : "LEGAL",
 
         battingTeamId: activeBattingId,
+        teamName: activeBattingId === teamAId ? teamAName : teamBName,
 
         strikerName:
           playerName || undefined,
