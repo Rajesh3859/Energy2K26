@@ -106,67 +106,67 @@ export default function MultiSportScoreDisplay({
     const maxOvers = liveData?.totalOvers || liveData?.match?.totalOvers || 20;
 
     return (
-      <div className="w-full rounded-2xl bg-gradient-to-b from-slate-900 via-slate-950 to-slate-950 border border-slate-800 p-4 sm:p-6 shadow-2xl space-y-4">
+      <div className="w-full rounded-md bg-gradient-to-b from-slate-900 via-slate-950 to-slate-950 border border-slate-800 p-3 sm:p-5 md:p-6 shadow-2xl space-y-3 sm:space-y-4">
         {/* Header Badges */}
-        <div className="flex items-center justify-between border-b border-slate-800/80 pb-3 text-xs font-extrabold uppercase">
-          <span className="text-cyan-400 flex items-center gap-1.5">
-            <span>🏏</span> CRICKET INNINGS {currentInnings} ({maxOvers} OVERS MATCH)
+        <div className="flex flex-wrap items-center justify-between border-b border-slate-800/80 pb-2.5 text-[10px] sm:text-xs font-extrabold uppercase gap-1.5">
+          <span className="text-cyan-400 flex items-center gap-1.5 truncate">
+            CRICKET INNINGS {currentInnings} ({maxOvers} OVERS MATCH)
           </span>
-          <span className="text-emerald-400 bg-emerald-950/80 px-2.5 py-0.5 rounded-full border border-emerald-500/30 font-mono">
-            ● LIVE SCORE
+          <span className="text-emerald-400 bg-emerald-950/80 px-2 py-0.5 rounded-md border border-emerald-500/30 font-mono">
+            LIVE SCORE
           </span>
         </div>
 
-        {/* Center Score Display matching reference design: 144/1 | 16.5/20 Overs */}
-        <div className="grid grid-cols-3 items-center text-center">
-          <div className="space-y-1">
-            <h3 className={`text-base sm:text-xl font-black truncate ${currentInnings === 1 ? "text-cyan-300" : "text-white"}`}>
+        {/* Center Score Display */}
+        <div className="grid grid-cols-3 items-center text-center gap-1 sm:gap-2">
+          <div className="space-y-0.5 sm:space-y-1 min-w-0">
+            <h3 className={`text-xs sm:text-lg md:text-xl font-black truncate ${currentInnings === 1 ? "text-cyan-300" : "text-white"}`}>
               {teamAName}
             </h3>
-            <p className="text-xs font-mono font-semibold text-slate-400">
-              {runsA}/{wicketsA} <span className="text-slate-500">({oversA}/{maxOvers} ov)</span>
+            <p className="text-[10px] sm:text-xs font-mono font-semibold text-slate-400 truncate">
+              {runsA}/{wicketsA} <span className="text-slate-500 hidden sm:inline">({oversA}/{maxOvers} ov)</span>
             </p>
           </div>
 
-          <div className="space-y-1">
-            <div className="font-mono text-3xl sm:text-5xl font-black tracking-tight text-white drop-shadow-md">
+          <div className="space-y-0.5 sm:space-y-1 min-w-0">
+            <div className="font-mono text-2xl sm:text-4xl md:text-5xl font-black tracking-tight text-white drop-shadow-md">
               {battingRuns}<span className="text-cyan-400 font-extrabold">/{battingWickets}</span>
             </div>
-            <div className="text-xs font-mono font-bold text-amber-400">
+            <div className="text-[10px] sm:text-xs font-mono font-bold text-amber-400 truncate">
               {battingOvers} / {maxOvers} Overs
             </div>
             {targetRuns && (
-              <div className="text-[11px] font-bold text-rose-400">
+              <div className="text-[10px] sm:text-[11px] font-bold text-rose-400">
                 Target {targetRuns}
               </div>
             )}
           </div>
 
-          <div className="space-y-1">
-            <h3 className={`text-base sm:text-xl font-black truncate ${currentInnings === 2 ? "text-cyan-300" : "text-white"}`}>
+          <div className="space-y-0.5 sm:space-y-1 min-w-0">
+            <h3 className={`text-xs sm:text-lg md:text-xl font-black truncate ${currentInnings === 2 ? "text-cyan-300" : "text-white"}`}>
               {teamBName}
             </h3>
-            <p className="text-xs font-mono font-semibold text-slate-400">
-              {runsB}/{wicketsB} <span className="text-slate-500">({oversB} ov)</span>
+            <p className="text-[10px] sm:text-xs font-mono font-semibold text-slate-400 truncate">
+              {runsB}/{wicketsB} <span className="text-slate-500 hidden sm:inline">({oversB} ov)</span>
             </p>
           </div>
         </div>
 
         {/* Target & Match Situation Banner */}
-        <div className="rounded-xl bg-slate-900/90 border border-slate-800 p-2.5 text-center text-xs font-bold text-slate-300">
+        <div className="rounded-md bg-slate-900/90 border border-slate-800 p-2 sm:p-2.5 text-center text-[11px] sm:text-xs font-bold text-slate-300">
           {currentInnings === 2 && runsNeeded !== null ? (
             runsNeeded === 0 ? (
-              <span className="text-emerald-400 font-extrabold text-sm flex items-center justify-center gap-1.5 animate-pulse">
-                🏆 MATCH COMPLETED — {teamBName} won by chasing the target! ({runsB}/{wicketsB})
+              <span className="text-emerald-400 font-extrabold text-xs sm:text-sm flex items-center justify-center gap-1.5 animate-pulse">
+                MATCH COMPLETED — {teamBName} won by chasing target! ({runsB}/{wicketsB})
               </span>
             ) : (
               <span className="text-emerald-400">
-                ⚡ {teamBName} need <span className="text-white font-mono text-sm underline">{runsNeeded}</span> runs to win
+                {teamBName} need <span className="text-white font-mono text-xs sm:text-sm underline">{runsNeeded}</span> runs to win
               </span>
             )
           ) : (
             <span className="text-cyan-300">
-              🏏 1st Innings in progress — {battingTeam} Batting
+              1st Innings in progress — {battingTeam} Batting
             </span>
           )}
         </div>
@@ -185,30 +185,30 @@ export default function MultiSportScoreDisplay({
     };
 
     return (
-      <div className="w-full rounded-2xl bg-slate-950/80 border border-slate-800 p-4 sm:p-6 shadow-xl space-y-4">
-        <div className="grid grid-cols-3 items-center text-center">
-          <div>
-            <h3 className="font-extrabold text-white text-base sm:text-xl truncate">{teamAName}</h3>
-            <span className="text-xs text-slate-400">Sets Won</span>
+      <div className="w-full rounded-md bg-slate-950/80 border border-slate-800 p-3 sm:p-5 md:p-6 shadow-xl space-y-3 sm:space-y-4">
+        <div className="grid grid-cols-3 items-center text-center gap-1 sm:gap-2">
+          <div className="min-w-0">
+            <h3 className="font-extrabold text-white text-xs sm:text-lg md:text-xl truncate">{teamAName}</h3>
+            <span className="text-[10px] sm:text-xs text-slate-400">Sets Won</span>
           </div>
 
-          <div className="flex items-center justify-center gap-3">
-            <span className="text-3xl sm:text-5xl font-black font-mono text-cyan-400">{vb.setsWonTeamA}</span>
-            <span className="text-xl text-slate-600 font-light">:</span>
-            <span className="text-3xl sm:text-5xl font-black font-mono text-cyan-400">{vb.setsWonTeamB}</span>
+          <div className="flex items-center justify-center gap-1.5 sm:gap-3">
+            <span className="text-2xl sm:text-4xl md:text-5xl font-black font-mono text-cyan-400">{vb.setsWonTeamA}</span>
+            <span className="text-lg sm:text-xl text-slate-600 font-light">:</span>
+            <span className="text-2xl sm:text-4xl md:text-5xl font-black font-mono text-cyan-400">{vb.setsWonTeamB}</span>
           </div>
 
-          <div>
-            <h3 className="font-extrabold text-white text-base sm:text-xl truncate">{teamBName}</h3>
-            <span className="text-xs text-slate-400">Sets Won</span>
+          <div className="min-w-0">
+            <h3 className="font-extrabold text-white text-xs sm:text-lg md:text-xl truncate">{teamBName}</h3>
+            <span className="text-[10px] sm:text-xs text-slate-400">Sets Won</span>
           </div>
         </div>
 
-        <div className="rounded-xl bg-slate-900 border border-slate-800 p-3 text-center">
-          <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">
+        <div className="rounded-md bg-slate-900 border border-slate-800 p-2 sm:p-3 text-center">
+          <span className="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-wider block mb-0.5 sm:mb-1">
             Set {vb.currentSet} Score
           </span>
-          <div className="font-mono text-xl sm:text-2xl font-extrabold text-emerald-400">
+          <div className="font-mono text-lg sm:text-2xl font-extrabold text-emerald-400">
             {vb.currentSetTeamA} ── {vb.currentSetTeamB}
           </div>
         </div>
@@ -226,33 +226,31 @@ export default function MultiSportScoreDisplay({
       currentGameTeamB: liveData?.currentGameTeamB ?? 0,
     };
 
-    const icon = code === "table_tennis" ? "🏓" : "🏸";
-
     return (
-      <div className="w-full rounded-2xl bg-slate-950/80 border border-slate-800 p-4 sm:p-6 shadow-xl space-y-4">
-        <div className="grid grid-cols-3 items-center text-center">
-          <div>
-            <h3 className="font-extrabold text-white text-base sm:text-xl truncate">{teamAName}</h3>
-            <span className="text-xs text-slate-400">Games Won</span>
+      <div className="w-full rounded-md bg-slate-950/80 border border-slate-800 p-3 sm:p-5 md:p-6 shadow-xl space-y-3 sm:space-y-4">
+        <div className="grid grid-cols-3 items-center text-center gap-1 sm:gap-2">
+          <div className="min-w-0">
+            <h3 className="font-extrabold text-white text-xs sm:text-lg md:text-xl truncate">{teamAName}</h3>
+            <span className="text-[10px] sm:text-xs text-slate-400">Games Won</span>
           </div>
 
-          <div className="flex items-center justify-center gap-3">
-            <span className="text-3xl sm:text-5xl font-black font-mono text-cyan-400">{tt.gamesWonTeamA}</span>
-            <span className="text-xl text-slate-600 font-light">:</span>
-            <span className="text-3xl sm:text-5xl font-black font-mono text-cyan-400">{tt.gamesWonTeamB}</span>
+          <div className="flex items-center justify-center gap-1.5 sm:gap-3">
+            <span className="text-2xl sm:text-4xl md:text-5xl font-black font-mono text-cyan-400">{tt.gamesWonTeamA}</span>
+            <span className="text-lg sm:text-xl text-slate-600 font-light">:</span>
+            <span className="text-2xl sm:text-4xl md:text-5xl font-black font-mono text-cyan-400">{tt.gamesWonTeamB}</span>
           </div>
 
-          <div>
-            <h3 className="font-extrabold text-white text-base sm:text-xl truncate">{teamBName}</h3>
-            <span className="text-xs text-slate-400">Games Won</span>
+          <div className="min-w-0">
+            <h3 className="font-extrabold text-white text-xs sm:text-lg md:text-xl truncate">{teamBName}</h3>
+            <span className="text-[10px] sm:text-xs text-slate-400">Games Won</span>
           </div>
         </div>
 
-        <div className="rounded-xl bg-slate-900 border border-slate-800 p-3 text-center">
-          <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">
-            {icon} Game {tt.currentGame} Points
+        <div className="rounded-md bg-slate-900 border border-slate-800 p-2 sm:p-3 text-center">
+          <span className="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-wider block mb-0.5 sm:mb-1">
+            Game {tt.currentGame} Points
           </span>
-          <div className="font-mono text-xl sm:text-2xl font-extrabold text-emerald-400">
+          <div className="font-mono text-lg sm:text-2xl font-extrabold text-emerald-400">
             {tt.currentGameTeamA} ── {tt.currentGameTeamB}
           </div>
         </div>
@@ -269,27 +267,27 @@ export default function MultiSportScoreDisplay({
     };
 
     return (
-      <div className="w-full rounded-2xl bg-slate-950/80 border border-slate-800 p-4 sm:p-6 shadow-xl space-y-4">
-        <div className="grid grid-cols-3 items-center text-center">
-          <div>
-            <h3 className="font-extrabold text-white text-base sm:text-xl truncate">{teamAName}</h3>
-            <span className="text-xs text-slate-400">Points</span>
+      <div className="w-full rounded-md bg-slate-950/80 border border-slate-800 p-3 sm:p-5 md:p-6 shadow-xl space-y-3 sm:space-y-4">
+        <div className="grid grid-cols-3 items-center text-center gap-1 sm:gap-2">
+          <div className="min-w-0">
+            <h3 className="font-extrabold text-white text-xs sm:text-lg md:text-xl truncate">{teamAName}</h3>
+            <span className="text-[10px] sm:text-xs text-slate-400">Points</span>
           </div>
 
-          <div className="flex items-center justify-center gap-3">
-            <span className="text-3xl sm:text-5xl font-black font-mono text-cyan-400">{bk.teamA}</span>
-            <span className="text-xl text-slate-600 font-light">:</span>
-            <span className="text-3xl sm:text-5xl font-black font-mono text-cyan-400">{bk.teamB}</span>
+          <div className="flex items-center justify-center gap-1.5 sm:gap-3">
+            <span className="text-2xl sm:text-4xl md:text-5xl font-black font-mono text-cyan-400">{bk.teamA}</span>
+            <span className="text-lg sm:text-xl text-slate-600 font-light">:</span>
+            <span className="text-2xl sm:text-4xl md:text-5xl font-black font-mono text-cyan-400">{bk.teamB}</span>
           </div>
 
-          <div>
-            <h3 className="font-extrabold text-white text-base sm:text-xl truncate">{teamBName}</h3>
-            <span className="text-xs text-slate-400">Points</span>
+          <div className="min-w-0">
+            <h3 className="font-extrabold text-white text-xs sm:text-lg md:text-xl truncate">{teamBName}</h3>
+            <span className="text-[10px] sm:text-xs text-slate-400">Points</span>
           </div>
         </div>
 
-        <div className="flex items-center justify-center gap-2 text-xs font-bold text-cyan-300 bg-slate-900 py-1.5 px-3 rounded-xl border border-slate-800 w-max mx-auto">
-          <span>🏀 Quarter {bk.quarter > 4 ? `OT ${bk.quarter - 4}` : bk.quarter}</span>
+        <div className="flex items-center justify-center gap-2 text-xs font-bold text-cyan-300 bg-slate-900 py-1.5 px-3 rounded-md border border-slate-800 w-max mx-auto">
+          <span>Quarter {bk.quarter > 4 ? `OT ${bk.quarter - 4}` : bk.quarter}</span>
         </div>
       </div>
     );
@@ -303,22 +301,22 @@ export default function MultiSportScoreDisplay({
     };
 
     return (
-      <div className="w-full rounded-2xl bg-slate-950/80 border border-slate-800 p-4 sm:p-6 shadow-xl space-y-4">
-        <div className="grid grid-cols-3 items-center text-center">
-          <div>
-            <h3 className="font-extrabold text-white text-base sm:text-xl truncate">{teamAName}</h3>
-            <span className="text-xs text-slate-400">Points</span>
+      <div className="w-full rounded-md bg-slate-950/80 border border-slate-800 p-3 sm:p-5 md:p-6 shadow-xl space-y-3 sm:space-y-4">
+        <div className="grid grid-cols-3 items-center text-center gap-1 sm:gap-2">
+          <div className="min-w-0">
+            <h3 className="font-extrabold text-white text-xs sm:text-lg md:text-xl truncate">{teamAName}</h3>
+            <span className="text-[10px] sm:text-xs text-slate-400">Points</span>
           </div>
 
-          <div className="flex items-center justify-center gap-3">
-            <span className="text-3xl sm:text-5xl font-black font-mono text-cyan-400">{kb.teamA}</span>
-            <span className="text-xl text-slate-600 font-light">:</span>
-            <span className="text-3xl sm:text-5xl font-black font-mono text-cyan-400">{kb.teamB}</span>
+          <div className="flex items-center justify-center gap-1.5 sm:gap-3">
+            <span className="text-2xl sm:text-4xl md:text-5xl font-black font-mono text-cyan-400">{kb.teamA}</span>
+            <span className="text-lg sm:text-xl text-slate-600 font-light">:</span>
+            <span className="text-2xl sm:text-4xl md:text-5xl font-black font-mono text-cyan-400">{kb.teamB}</span>
           </div>
 
-          <div>
-            <h3 className="font-extrabold text-white text-base sm:text-xl truncate">{teamBName}</h3>
-            <span className="text-xs text-slate-400">Points</span>
+          <div className="min-w-0">
+            <h3 className="font-extrabold text-white text-xs sm:text-lg md:text-xl truncate">{teamBName}</h3>
+            <span className="text-[10px] sm:text-xs text-slate-400">Points</span>
           </div>
         </div>
       </div>
@@ -327,22 +325,22 @@ export default function MultiSportScoreDisplay({
 
   // 6. DEFAULT / FOOTBALL SCOREBOARD DISPLAY (Goals / Standard)
   return (
-    <div className="w-full rounded-2xl bg-slate-950/80 border border-slate-800 p-4 sm:p-6 shadow-xl">
-      <div className="grid grid-cols-3 items-center text-center">
-        <div>
-          <h3 className="font-extrabold text-white text-base sm:text-xl truncate">{teamAName}</h3>
-          <span className="text-xs text-slate-400">Home</span>
+    <div className="w-full rounded-md bg-slate-950/80 border border-slate-800 p-3 sm:p-5 md:p-6 shadow-xl">
+      <div className="grid grid-cols-3 items-center text-center gap-1 sm:gap-2">
+        <div className="min-w-0">
+          <h3 className="font-extrabold text-white text-xs sm:text-lg md:text-xl truncate">{teamAName}</h3>
+          <span className="text-[10px] sm:text-xs text-slate-400">Home</span>
         </div>
 
-        <div className="flex items-center justify-center gap-2 sm:gap-4">
-          <span className="text-3xl sm:text-5xl font-black font-mono text-cyan-400">{scoreA}</span>
-          <span className="text-xl sm:text-3xl font-light text-slate-600">:</span>
-          <span className="text-3xl sm:text-5xl font-black font-mono text-cyan-400">{scoreB}</span>
+        <div className="flex items-center justify-center gap-1.5 sm:gap-4">
+          <span className="text-2xl sm:text-4xl md:text-5xl font-black font-mono text-cyan-400">{scoreA}</span>
+          <span className="text-lg sm:text-2xl font-light text-slate-600">:</span>
+          <span className="text-2xl sm:text-4xl md:text-5xl font-black font-mono text-cyan-400">{scoreB}</span>
         </div>
 
-        <div>
-          <h3 className="font-extrabold text-white text-base sm:text-xl truncate">{teamBName}</h3>
-          <span className="text-xs text-slate-400">Away</span>
+        <div className="min-w-0">
+          <h3 className="font-extrabold text-white text-xs sm:text-lg md:text-xl truncate">{teamBName}</h3>
+          <span className="text-[10px] sm:text-xs text-slate-400">Away</span>
         </div>
       </div>
     </div>

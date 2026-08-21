@@ -47,52 +47,52 @@ export default function BasketballConsole({ match, liveData, onEventAdded }: Bas
   }
 
   return (
-    <div className="rounded-2xl border border-slate-800 bg-slate-900/90 p-5 space-y-6 shadow-xl">
+    <div className="rounded-md border border-slate-800 bg-slate-900/90 p-5 space-y-6 shadow-xl">
       <div className="flex items-center justify-between border-b border-slate-800 pb-3">
         <h3 className="text-lg font-bold text-orange-400 flex items-center gap-2">
-          <span>🏀</span> Basketball Scorer Console
+          Basketball Scorer Console
         </h3>
         <select
           value={currentTeamId}
           onChange={(e) => setTeamId(e.target.value)}
-          className="rounded-xl border border-slate-700 bg-slate-950 px-3 py-1.5 text-xs font-bold text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+          className="rounded-md border border-slate-700 bg-slate-950 px-3 py-1.5 text-xs font-bold text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
         >
           <option value={teamAId}>Team: {teamAName}</option>
           <option value={teamBId}>Team: {teamBName}</option>
         </select>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
         <button
           onClick={() => handleAddBasketEvent("point_1", 1, "Free Throw (+1)")}
           disabled={loading}
-          className="rounded-xl bg-slate-800 hover:bg-orange-600 text-white font-extrabold py-3 text-sm transition-all shadow-md active:scale-95 disabled:opacity-50"
+          className="rounded-md bg-slate-800 hover:bg-orange-600 text-white font-extrabold py-2.5 sm:py-3 text-xs sm:text-sm transition-all shadow-md active:scale-95 disabled:opacity-50 cursor-pointer min-h-[44px]"
         >
-          🎯 Free Throw (+1)
+          Free Throw (+1)
         </button>
 
         <button
           onClick={() => handleAddBasketEvent("point_2", 2, "Field Goal (+2)")}
           disabled={loading}
-          className="rounded-xl bg-orange-600 hover:bg-orange-500 text-white font-extrabold py-3 text-sm transition-all shadow-md active:scale-95 disabled:opacity-50"
+          className="rounded-md bg-orange-600 hover:bg-orange-500 text-white font-extrabold py-2.5 sm:py-3 text-xs sm:text-sm transition-all shadow-md active:scale-95 disabled:opacity-50 cursor-pointer min-h-[44px]"
         >
-          🏀 Field Goal (+2)
+          Field Goal (+2)
         </button>
 
         <button
           onClick={() => handleAddBasketEvent("point_3", 3, "3-Pointer (+3)")}
           disabled={loading}
-          className="rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black py-3 text-sm transition-all shadow-md active:scale-95 disabled:opacity-50"
+          className="rounded-md bg-amber-500 hover:bg-amber-400 text-slate-950 font-black py-2.5 sm:py-3 text-xs sm:text-sm transition-all shadow-md active:scale-95 disabled:opacity-50 cursor-pointer min-h-[44px]"
         >
-          🔥 3-Pointer (+3)
+          3-Pointer (+3)
         </button>
 
         <button
           onClick={() => handleAddBasketEvent("foul", 0, "Personal Foul")}
           disabled={loading}
-          className="rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-extrabold py-3 text-sm transition-all shadow-md active:scale-95 disabled:opacity-50"
+          className="rounded-md bg-rose-600 hover:bg-rose-500 text-white font-extrabold py-2.5 sm:py-3 text-xs sm:text-sm transition-all shadow-md active:scale-95 disabled:opacity-50 cursor-pointer min-h-[44px]"
         >
-          ⚠️ Foul
+          Foul
         </button>
       </div>
 
@@ -103,7 +103,7 @@ export default function BasketballConsole({ match, liveData, onEventAdded }: Bas
           placeholder="e.g. LeBron James"
           value={playerName}
           onChange={(e) => setPlayerName(e.target.value)}
-          className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+          className="w-full rounded-md border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
         />
       </div>
     </div>

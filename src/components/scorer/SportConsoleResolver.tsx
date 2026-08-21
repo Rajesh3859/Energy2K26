@@ -48,6 +48,8 @@ export default function SportConsoleResolver({
   handleAddEvent,
   actionLoading,
 }: SportConsoleResolverProps) {
+  const isConsoleEnabled = !!liveData;
+
   const targetSport =
     match?.sportName ||
     match?.sportCode ||
@@ -59,126 +61,144 @@ export default function SportConsoleResolver({
   const sportDef = getSportDefinition(targetSport);
   const code = sportDef.code;
 
-  if (code === "cricket") {
-    return <CricketConsole match={match} liveData={liveData} onEventAdded={onEventAdded} />;
-  }
+  function renderInnerConsole() {
+    if (code === "cricket") {
+      return <CricketConsole match={match} liveData={liveData} onEventAdded={onEventAdded} />;
+    }
 
-  if (code === "kabaddi") {
-    return <KabaddiConsole match={match} liveData={liveData} onEventAdded={onEventAdded} />;
-  }
+    if (code === "kabaddi") {
+      return <KabaddiConsole match={match} liveData={liveData} onEventAdded={onEventAdded} />;
+    }
 
-  if (code === "basketball") {
-    return <BasketballConsole match={match} liveData={liveData} onEventAdded={onEventAdded} />;
-  }
+    if (code === "basketball") {
+      return <BasketballConsole match={match} liveData={liveData} onEventAdded={onEventAdded} />;
+    }
 
-  if (code === "volleyball") {
-    return <VolleyballConsole match={match} liveData={liveData} onEventAdded={onEventAdded} />;
-  }
+    if (code === "volleyball") {
+      return <VolleyballConsole match={match} liveData={liveData} onEventAdded={onEventAdded} />;
+    }
 
-  if (code === "table_tennis") {
-    return <TableTennisConsole match={match} liveData={liveData} onEventAdded={onEventAdded} />;
-  }
+    if (code === "table_tennis") {
+      return <TableTennisConsole match={match} liveData={liveData} onEventAdded={onEventAdded} />;
+    }
 
-  if (code === "badminton") {
-    return <BadmintonConsole match={match} liveData={liveData} onEventAdded={onEventAdded} />;
-  }
+    if (code === "badminton") {
+      return <BadmintonConsole match={match} liveData={liveData} onEventAdded={onEventAdded} />;
+    }
 
-  // DEFAULT / FOOTBALL SCORER CONSOLE
-  const teamAName = liveData?.teamA?.teamName || match?.teamA?.name || "Team A";
-  const teamBName = liveData?.teamB?.teamName || match?.teamB?.name || "Team B";
-  const teamAId = liveData?.teamA?.teamId || match?.teamA?.id || "teamA";
-  const teamBId = liveData?.teamB?.teamId || match?.teamB?.id || "teamB";
+    // DEFAULT / FOOTBALL SCORER CONSOLE
+    const teamAName = liveData?.teamA?.teamName || match?.teamA?.name || "Team A";
+    const teamBName = liveData?.teamB?.teamName || match?.teamB?.name || "Team B";
+    const teamAId = liveData?.teamA?.teamId || match?.teamA?.id || "teamA";
+    const teamBId = liveData?.teamB?.teamId || match?.teamB?.id || "teamB";
 
-  return (
-    <div className="rounded-2xl border border-slate-800 bg-slate-900/90 p-5 space-y-6 shadow-xl">
-      <h3 className="text-lg font-bold text-cyan-400 flex items-center gap-2 border-b border-slate-800 pb-3">
-        <span>⚽</span> Football Match Event Console
-      </h3>
+    return (
+      <div className="rounded-md border border-slate-800 bg-slate-900/90 p-5 space-y-6 shadow-xl">
+        <h3 className="text-lg font-bold text-cyan-400 flex items-center gap-2 border-b border-slate-800 pb-3">
+          Football Match Event Console
+        </h3>
 
-      <form onSubmit={handleAddEvent} className="space-y-4">
-        <div className="grid gap-4 grid-cols-1 sm:grid-cols-3">
-          <div>
-            <label className="block text-xs font-bold text-slate-400 mb-1">Event Type</label>
-            <select
-              value={eventType}
-              onChange={(e: any) => setEventType(e.target.value)}
-              className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
-            >
-              <option value="goal">⚽ Goal</option>
-              <option value="yellow_card">🟨 Yellow Card</option>
-              <option value="red_card">🟥 Red Card</option>
-              <option value="substitution">🔄 Substitution</option>
-            </select>
+        <form onSubmit={handleAddEvent} className="space-y-4">
+          <div className="grid gap-4 grid-cols-1 sm:grid-cols-3">
+            <div>
+              <label className="block text-xs font-bold text-slate-400 mb-1">Event Type</label>
+              <select
+                value={eventType}
+                onChange={(e: any) => setEventType(e.target.value)}
+                className="w-full rounded-md border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
+              >
+                <option value="goal">Goal</option>
+                <option value="yellow_card">Yellow Card</option>
+                <option value="red_card">Red Card</option>
+                <option value="substitution">Substitution</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-slate-400 mb-1">Team</label>
+              <select
+                value={eventTeamId || teamAId}
+                onChange={(e) => setEventTeamId(e.target.value)}
+                className="w-full rounded-md border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
+              >
+                <option value={teamAId}>{teamAName} (Home)</option>
+                <option value={teamBId}>{teamBName} (Away)</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-slate-400 mb-1">Match Minute</label>
+              <input
+                type="number"
+                min={1}
+                max={120}
+                value={eventMinute}
+                onChange={(e) => setEventMinute(Number(e.target.value))}
+                className="w-full rounded-md border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
+              />
+            </div>
           </div>
 
-          <div>
-            <label className="block text-xs font-bold text-slate-400 mb-1">Team</label>
-            <select
-              value={eventTeamId || teamAId}
-              onChange={(e) => setEventTeamId(e.target.value)}
-              className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
-            >
-              <option value={teamAId}>{teamAName} (Home)</option>
-              <option value={teamBId}>{teamBName} (Away)</option>
-            </select>
+          <div className="grid gap-4 grid-cols-1 sm:grid-cols-3">
+            <div>
+              <label className="block text-xs font-bold text-slate-400 mb-1">Player Name</label>
+              <input
+                type="text"
+                placeholder="Player Name (Optional)"
+                value={playerName}
+                onChange={(e) => setPlayerName(e.target.value)}
+                className="w-full rounded-md border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-slate-400 mb-1">Assist By (Optional)</label>
+              <input
+                type="text"
+                placeholder="Assist Player Name"
+                value={assistPlayerName}
+                onChange={(e) => setAssistPlayerName(e.target.value)}
+                className="w-full rounded-md border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-slate-400 mb-1">Description / Note</label>
+              <input
+                type="text"
+                placeholder="e.g. Header from corner kick"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                className="w-full rounded-md border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
+              />
+            </div>
           </div>
 
-          <div>
-            <label className="block text-xs font-bold text-slate-400 mb-1">Match Minute</label>
-            <input
-              type="number"
-              min={1}
-              max={120}
-              value={eventMinute}
-              onChange={(e) => setEventMinute(Number(e.target.value))}
-              className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
-            />
-          </div>
+          <button
+            type="submit"
+            disabled={actionLoading}
+            className="w-full rounded-md bg-cyan-600 hover:bg-cyan-500 text-white font-extrabold py-3 text-sm transition-all shadow-lg active:scale-98 disabled:opacity-50 cursor-pointer"
+          >
+            {actionLoading ? "Recording Event..." : "Record Live Football Event"}
+          </button>
+        </form>
+      </div>
+    );
+  }
+
+  if (!isConsoleEnabled) {
+    return (
+      <div className="rounded-md border border-amber-500/30 bg-slate-900/90 p-5 space-y-4 shadow-xl">
+        <div className="flex items-center gap-3 rounded-md bg-amber-500/10 border border-amber-500/30 p-4 text-amber-300 text-xs sm:text-sm font-bold">
+          <span>Console Locked:</span>
+          <span>Please click <span className="underline text-white font-extrabold">Initialize Match</span> or <span className="underline text-white font-extrabold">Start 1st Half</span> above to enable the scorer console for this match.</span>
         </div>
-
-        <div className="grid gap-4 grid-cols-1 sm:grid-cols-3">
-          <div>
-            <label className="block text-xs font-bold text-slate-400 mb-1">Player Name</label>
-            <input
-              type="text"
-              placeholder="Player Name (Optional)"
-              value={playerName}
-              onChange={(e) => setPlayerName(e.target.value)}
-              className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-bold text-slate-400 mb-1">Assist By (Optional)</label>
-            <input
-              type="text"
-              placeholder="Assist Player Name"
-              value={assistPlayerName}
-              onChange={(e) => setAssistPlayerName(e.target.value)}
-              className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-bold text-slate-400 mb-1">Description / Note</label>
-            <input
-              type="text"
-              placeholder="e.g. Header from corner kick"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
-            />
-          </div>
+        <div className="pointer-events-none opacity-40 select-none">
+          {renderInnerConsole()}
         </div>
+      </div>
+    );
+  }
 
-        <button
-          type="submit"
-          disabled={actionLoading}
-          className="w-full rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-extrabold py-3 text-sm transition-all shadow-lg active:scale-98 disabled:opacity-50"
-        >
-          {actionLoading ? "Recording Event..." : "Record Live Football Event"}
-        </button>
-      </form>
-    </div>
-  );
+  return renderInnerConsole();
 }

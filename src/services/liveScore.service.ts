@@ -1,4 +1,6 @@
 import { apiRequest } from "@/lib/api";
+import { database } from "@/lib/firebase";
+import { ref, push } from "firebase/database";
 
 export interface FootballEventPayload {
   type: "goal" | "yellow_card" | "red_card" | "substitution" | string;
@@ -85,10 +87,25 @@ export async function createFootballEvent(
   matchId: string,
   eventData: FootballEventPayload
 ): Promise<{ success?: boolean; data: any }> {
-  return apiRequest(`/live-matches/${matchId}/events`, {
-    method: "POST",
-    body: JSON.stringify(eventData),
-  });
+  try {
+    return await apiRequest(`/live-matches/${matchId}/events`, {
+      method: "POST",
+      body: JSON.stringify(eventData),
+    });
+  } catch (err: any) {
+    console.warn("⚠️ REST API event error, using RTDB fallback:", err?.message);
+    try {
+      const matchEventsRef = ref(database, `liveMatches/${matchId}/events`);
+      await push(matchEventsRef, {
+        ...eventData,
+        timestamp: Date.now(),
+        createdAt: Date.now(),
+      });
+      return { success: true, data: eventData };
+    } catch {
+      throw err;
+    }
+  }
 }
 
 export async function updateLiveMatchStatus(

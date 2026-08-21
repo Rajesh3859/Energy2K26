@@ -32,7 +32,7 @@ export default function MatchCard({
   return (
     <div
       onClick={onClick}
-      className="group relative cursor-pointer overflow-hidden rounded-3xl border border-slate-800 bg-slate-900/90 p-4 sm:p-6 shadow-xl transition-all duration-300 hover:border-cyan-500/50 hover:shadow-cyan-500/10 hover:scale-[1.02]"
+      className="group relative cursor-pointer overflow-hidden rounded-md border border-slate-800 bg-slate-900/90 p-4 sm:p-6 shadow-xl transition-all duration-300 hover:border-cyan-500/50 hover:shadow-cyan-500/10 hover:scale-[1.01]"
     >
       <div className="flex items-center justify-between border-b border-slate-800/80 pb-3 mb-3">
         <span className="text-xs font-bold text-cyan-400 uppercase tracking-wider">
@@ -40,7 +40,7 @@ export default function MatchCard({
         </span>
 
         <span
-          className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-extrabold border ${
+          className={`inline-flex items-center gap-1.5 rounded-md px-2.5 py-0.5 text-xs font-extrabold border ${
             isLive
               ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20 animate-pulse"
               : "bg-slate-800 text-slate-400 border-slate-700"

@@ -510,10 +510,10 @@ export default function ScorerPage() {
   return (
     <div className="space-y-6 sm:space-y-8">
       {/* Top Header / Profile Bar */}
-      <div className="flex flex-wrap items-center justify-between gap-4 bg-slate-900/80 border border-slate-800 rounded-2xl p-4 shadow-lg">
+      <div className="flex flex-wrap items-center justify-between gap-4 bg-slate-900/80 border border-slate-800 rounded-md p-4 shadow-lg">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 text-xl font-bold">
-            📋
+          <div className="flex h-10 w-10 items-center justify-center rounded-md bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 text-xs font-bold uppercase">
+            LOG
           </div>
           <div>
             <h1 className="text-lg font-bold text-white leading-tight">Match Scorer Dashboard</h1>
@@ -524,8 +524,8 @@ export default function ScorerPage() {
         {/* User Profile & Role Badge */}
         {currentUser && (
           <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2.5 rounded-xl bg-slate-950 border border-slate-800 px-3.5 py-1.5 shadow-inner">
-              <div className="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-tr from-cyan-500 to-blue-600 font-black text-xs text-slate-950 uppercase shadow">
+            <div className="flex items-center gap-2.5 rounded-md bg-slate-950 border border-slate-800 px-3.5 py-1.5 shadow-inner">
+              <div className="flex h-7 w-7 items-center justify-center rounded-md bg-gradient-to-tr from-cyan-500 to-blue-600 font-black text-xs text-slate-950 uppercase shadow">
                 {(currentUser.displayName || currentUser.email || "SC").slice(0, 2).toUpperCase()}
               </div>
               <div className="flex flex-col text-left">
@@ -545,24 +545,24 @@ export default function ScorerPage() {
       <div className="flex items-center gap-3 border-b border-slate-800 pb-3">
         <button
           onClick={() => setActiveTab("live")}
-          className={`rounded-xl px-5 py-2.5 text-sm font-bold transition-all ${
+          className={`rounded-md px-5 py-2.5 text-sm font-bold transition-all cursor-pointer ${
             activeTab === "live"
               ? "bg-cyan-500 text-slate-950 shadow-lg shadow-cyan-500/20"
               : "bg-slate-900 text-slate-400 hover:text-white border border-slate-800"
           }`}
         >
-          ⚡ Live Scoring Console ({activeMatches.length})
+          Live Scoring Console ({activeMatches.length})
         </button>
 
         <button
           onClick={() => setActiveTab("history")}
-          className={`rounded-xl px-5 py-2.5 text-sm font-bold transition-all ${
+          className={`rounded-md px-5 py-2.5 text-sm font-bold transition-all cursor-pointer ${
             activeTab === "history"
               ? "bg-cyan-500 text-slate-950 shadow-lg shadow-cyan-500/20"
               : "bg-slate-900 text-slate-400 hover:text-white border border-slate-800"
           }`}
         >
-          🏆 Completed Match History ({completedMatches.length})
+          Completed Match History ({completedMatches.length})
         </button>
       </div>
 
@@ -571,8 +571,7 @@ export default function ScorerPage() {
         <div className="space-y-4">
           <h2 className="text-xl font-bold text-white">Completed Tournament Matches</h2>
           {completedMatches.length === 0 ? (
-            <div className="rounded-3xl border border-slate-800 bg-slate-900/60 p-12 text-center text-slate-400 shadow-xl">
-              <span className="text-4xl mb-3 block">📜</span>
+            <div className="rounded-md border border-slate-800 bg-slate-900/60 p-12 text-center text-slate-400 shadow-xl">
               <h3 className="text-lg font-bold text-white mb-1">No Completed Matches Yet</h3>
               <p className="text-sm text-slate-500">
                 Completed matches will be archived here with downloadable official reports.
@@ -589,12 +588,12 @@ export default function ScorerPage() {
                 return (
                   <div
                     key={m.id}
-                    className="rounded-2xl border border-slate-800 bg-slate-900 p-5 shadow-xl flex flex-col justify-between gap-4"
+                    className="rounded-md border border-slate-800 bg-slate-900 p-5 shadow-xl flex flex-col justify-between gap-4"
                   >
                     <div>
                       <div className="flex items-center justify-between text-xs text-cyan-400 font-bold uppercase tracking-wider mb-3">
                         <span>{m.sportName || m.sport || "Football"}</span>
-                        <span className="rounded-full bg-slate-800 px-2.5 py-0.5 text-slate-300">
+                        <span className="rounded-md bg-slate-800 px-2.5 py-0.5 text-slate-300">
                           {m.venue || "Stadium"}
                         </span>
                       </div>
@@ -610,9 +609,9 @@ export default function ScorerPage() {
 
                     <button
                       onClick={() => exportMatchReportCSV(m)}
-                      className="w-full rounded-xl bg-slate-800 border border-slate-700 py-2 text-xs font-bold text-cyan-300 hover:bg-slate-700 hover:text-white transition-all flex items-center justify-center gap-2"
+                      className="w-full rounded-md bg-slate-800 border border-slate-700 py-2 text-xs font-bold text-cyan-300 hover:bg-slate-700 hover:text-white transition-all flex items-center justify-center gap-2 cursor-pointer"
                     >
-                      📥 Download Official Match Report (.CSV)
+                      Download Official Match Report (.CSV)
                     </button>
                   </div>
                 );
@@ -624,7 +623,7 @@ export default function ScorerPage() {
         /* Live Scoring Console View */
         <>
           {/* Match Selector */}
-          <div className="rounded-2xl border border-slate-800 bg-slate-900/90 p-4 sm:p-5 shadow-xl space-y-3">
+          <div className="rounded-md border border-slate-800 bg-slate-900/90 p-4 sm:p-5 shadow-xl space-y-3">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <label className="text-xs font-bold uppercase tracking-wider text-slate-400">
                 Select Active Match to Score
@@ -633,24 +632,24 @@ export default function ScorerPage() {
                 <button
                   type="button"
                   onClick={() => setFilterAssignedOnly(true)}
-                  className={`px-3 py-1 text-xs font-bold rounded-lg border transition-all ${
+                  className={`px-3 py-1 text-xs font-bold rounded-md border transition-all cursor-pointer ${
                     filterAssignedOnly
                       ? "bg-cyan-500 text-slate-950 border-cyan-400 shadow-md"
                       : "bg-slate-950 text-slate-400 border-slate-800 hover:text-white"
                   }`}
                 >
-                  🎯 My Assigned Matches
+                  My Assigned Matches
                 </button>
                 <button
                   type="button"
                   onClick={() => setFilterAssignedOnly(false)}
-                  className={`px-3 py-1 text-xs font-bold rounded-lg border transition-all ${
+                  className={`px-3 py-1 text-xs font-bold rounded-md border transition-all cursor-pointer ${
                     !filterAssignedOnly
                       ? "bg-cyan-500 text-slate-950 border-cyan-400 shadow-md"
                       : "bg-slate-950 text-slate-400 border-slate-800 hover:text-white"
                   }`}
                 >
-                  🌐 All Matches ({matches.length})
+                  All Matches ({matches.length})
                 </button>
               </div>
             </div>
@@ -661,7 +660,7 @@ export default function ScorerPage() {
                 const m = matches.find((x) => x.id === e.target.value);
                 if (m) handleSelectMatch(m);
               }}
-              className="w-full rounded-xl border border-slate-700 bg-slate-950 p-2.5 sm:p-3 text-sm sm:text-base font-semibold text-white focus:border-cyan-500 focus:outline-none"
+              className="w-full rounded-md border border-slate-700 bg-slate-950 p-2.5 sm:p-3 text-sm sm:text-base font-semibold text-white focus:border-cyan-500 focus:outline-none cursor-pointer"
             >
               {matchesForScorer.length === 0 ? (
                 <option value="">No matches assigned to your account</option>
@@ -679,13 +678,13 @@ export default function ScorerPage() {
             <div className="grid gap-6 sm:gap-8 lg:grid-cols-3">
               {/* Main Scoreboard & Digital Clock */}
               <div className="lg:col-span-2 space-y-6">
-                <div className="relative overflow-hidden rounded-3xl border border-slate-800 bg-gradient-to-b from-slate-900 via-slate-900/90 to-slate-950 p-5 sm:p-8 shadow-2xl">
+                <div className="relative overflow-hidden rounded-md border border-slate-800 bg-gradient-to-b from-slate-900 via-slate-900/90 to-slate-950 p-5 sm:p-8 shadow-2xl">
                   {/* Top Bar */}
                   <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between border-b border-slate-800/80 pb-4 mb-6 gap-3">
                     <span className="text-xs font-bold uppercase tracking-widest text-cyan-400 flex items-center gap-2">
                       <span>{selectedMatch.sportName || selectedMatch.sport || "Football"} • {selectedMatch.venue || "Stadium"}</span>
-                      <span className="text-emerald-400 font-mono text-[10px] bg-emerald-950 px-2 py-0.5 rounded-full border border-emerald-500/30">
-                        ● RTDB Connected (0ms)
+                      <span className="text-emerald-400 font-mono text-[10px] bg-emerald-950 px-2 py-0.5 rounded-md border border-emerald-500/30">
+                        RTDB Connected (0ms)
                       </span>
                     </span>
 
@@ -711,9 +710,9 @@ export default function ScorerPage() {
                       <button
                         onClick={handleInitialize}
                         disabled={actionLoading}
-                        className="w-full sm:w-auto rounded-xl bg-cyan-600 px-5 py-2.5 text-sm font-bold text-white shadow-lg hover:bg-cyan-500 transition-all disabled:opacity-50 flex items-center gap-2"
+                        className="w-full sm:w-auto rounded-md bg-cyan-600 px-5 py-2.5 text-sm font-bold text-white shadow-lg hover:bg-cyan-500 transition-all disabled:opacity-50 flex items-center gap-2 cursor-pointer"
                       >
-                        <span>⚙️ Initialize Match</span>
+                        Initialize Match
                       </button>
                     )}
 
@@ -722,9 +721,9 @@ export default function ScorerPage() {
                       <button
                         onClick={handleStart}
                         disabled={actionLoading}
-                        className="w-full sm:w-auto rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-bold text-white shadow-lg hover:bg-emerald-500 transition-all disabled:opacity-50 flex items-center gap-2"
+                        className="w-full sm:w-auto rounded-md bg-emerald-600 px-5 py-2.5 text-sm font-bold text-white shadow-lg hover:bg-emerald-500 transition-all disabled:opacity-50 flex items-center gap-2 cursor-pointer"
                       >
-                        <span>▶️ Start 1st Half</span>
+                        Start 1st Half
                       </button>
                     )}
 
@@ -733,9 +732,9 @@ export default function ScorerPage() {
                       <button
                         onClick={() => handleStatusChange("paused")}
                         disabled={actionLoading}
-                        className="w-full sm:w-auto rounded-xl bg-amber-600 px-5 py-2.5 text-sm font-bold text-white shadow-lg hover:bg-amber-500 transition-all disabled:opacity-50 flex items-center gap-2"
+                        className="w-full sm:w-auto rounded-md bg-amber-600 px-5 py-2.5 text-sm font-bold text-white shadow-lg hover:bg-amber-500 transition-all disabled:opacity-50 flex items-center gap-2 cursor-pointer"
                       >
-                        <span>⏸️ Pause Match</span>
+                        Pause Match
                       </button>
                     )}
 
@@ -744,9 +743,9 @@ export default function ScorerPage() {
                       <button
                         onClick={() => handleStatusChange("live")}
                         disabled={actionLoading}
-                        className="w-full sm:w-auto rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-bold text-white shadow-lg hover:bg-emerald-500 transition-all disabled:opacity-50 flex items-center gap-2"
+                        className="w-full sm:w-auto rounded-md bg-emerald-600 px-5 py-2.5 text-sm font-bold text-white shadow-lg hover:bg-emerald-500 transition-all disabled:opacity-50 flex items-center gap-2 cursor-pointer"
                       >
-                        <span>▶️ Resume Match</span>
+                        Resume Match
                       </button>
                     )}
 
@@ -755,9 +754,9 @@ export default function ScorerPage() {
                       <button
                         onClick={() => handleStatusChange("half_time")}
                         disabled={actionLoading}
-                        className="w-full sm:w-auto rounded-xl bg-slate-800 border border-slate-700 px-5 py-2.5 text-sm font-bold text-slate-200 shadow-lg hover:bg-slate-700 transition-all disabled:opacity-50 flex items-center gap-2"
+                        className="w-full sm:w-auto rounded-md bg-slate-800 border border-slate-700 px-5 py-2.5 text-sm font-bold text-slate-200 shadow-lg hover:bg-slate-700 transition-all disabled:opacity-50 flex items-center gap-2 cursor-pointer"
                       >
-                        <span>🏁 1st Half End (Half Time)</span>
+                        1st Half End (Half Time)
                       </button>
                     )}
 
@@ -766,9 +765,9 @@ export default function ScorerPage() {
                       <button
                         onClick={() => handleStatusChange("live")}
                         disabled={actionLoading}
-                        className="w-full sm:w-auto rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-bold text-white shadow-lg hover:bg-emerald-500 transition-all disabled:opacity-50 flex items-center gap-2"
+                        className="w-full sm:w-auto rounded-md bg-emerald-600 px-5 py-2.5 text-sm font-bold text-white shadow-lg hover:bg-emerald-500 transition-all disabled:opacity-50 flex items-center gap-2 cursor-pointer"
                       >
-                        <span>▶️ Start 2nd Half</span>
+                        Start 2nd Half
                       </button>
                     )}
 
@@ -777,9 +776,9 @@ export default function ScorerPage() {
                       <button
                         onClick={() => handleStatusChange("full_time")}
                         disabled={actionLoading}
-                        className="w-full sm:w-auto rounded-xl bg-orange-600 px-5 py-2.5 text-sm font-bold text-white shadow-lg hover:bg-orange-500 transition-all disabled:opacity-50 flex items-center gap-2"
+                        className="w-full sm:w-auto rounded-md bg-orange-600 px-5 py-2.5 text-sm font-bold text-white shadow-lg hover:bg-orange-500 transition-all disabled:opacity-50 flex items-center gap-2 cursor-pointer"
                       >
-                        <span>⏱️ Whistle Full Time</span>
+                        Whistle Full Time
                       </button>
                     )}
 
@@ -788,17 +787,17 @@ export default function ScorerPage() {
                       <button
                         onClick={handleComplete}
                         disabled={actionLoading}
-                        className="w-full sm:w-auto rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-bold text-white shadow-lg hover:bg-blue-500 transition-all disabled:opacity-50 flex items-center gap-2"
+                        className="w-full sm:w-auto rounded-md bg-blue-600 px-5 py-2.5 text-sm font-bold text-white shadow-lg hover:bg-blue-500 transition-all disabled:opacity-50 flex items-center gap-2 cursor-pointer"
                       >
-                        <span>🏆 Finalize & Complete Match</span>
+                        Finalize & Complete Match
                       </button>
                     )}
 
                     <button
                       onClick={() => exportMatchReportCSV(selectedMatch, liveData)}
-                      className="w-full sm:w-auto rounded-xl border border-slate-700 bg-slate-800 px-4 py-2.5 text-sm font-bold text-slate-200 hover:bg-slate-700 transition-all"
+                      className="w-full sm:w-auto rounded-md border border-slate-700 bg-slate-800 px-4 py-2.5 text-sm font-bold text-slate-200 hover:bg-slate-700 transition-all cursor-pointer"
                     >
-                      📥 Download Report (.CSV)
+                      Download Report (.CSV)
                     </button>
                   </div>
                 </div>
@@ -828,7 +827,7 @@ export default function ScorerPage() {
               </div>
 
               {/* Event Stream & Timeline */}
-              <div className="rounded-2xl border border-slate-800 bg-slate-900/90 p-5 sm:p-6 shadow-xl space-y-4">
+              <div className="rounded-md border border-slate-800 bg-slate-900/90 p-5 sm:p-6 shadow-xl space-y-4">
                 <h3 className="text-base sm:text-lg font-bold text-white flex items-center justify-between border-b border-slate-800 pb-3">
                   <span>Match Timeline</span>
                   <span className="text-xs font-semibold text-slate-400">
@@ -850,33 +849,33 @@ export default function ScorerPage() {
                       return (
                         <div
                           key={itemKey}
-                          className="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-950/70 p-3 text-sm"
+                          className="flex items-center justify-between rounded-md border border-slate-800 bg-slate-950/70 p-3 text-sm"
                         >
                           <div className="flex items-center gap-3">
-                            <span className="font-mono text-xs font-bold text-cyan-400 bg-slate-900 px-2 py-1 rounded">
+                            <span className="font-mono text-xs font-bold text-cyan-400 bg-slate-900 px-2 py-1 rounded-md">
                               {ev.minute}'
                             </span>
                             <div>
                               <p className="font-semibold text-slate-200 text-xs sm:text-sm">
-                                {ev.type === "goal" ? "⚽ Goal" : ev.type === "yellow_card" ? "🟨 Yellow Card" : ev.type === "red_card" ? "🟥 Red Card" : "🔄 Sub"}
+                                {ev.type === "goal" ? "Goal" : ev.type === "yellow_card" ? "Yellow Card" : ev.type === "red_card" ? "Red Card" : "Sub"}
                                 {" — "}
                                 <span className="text-slate-300 font-bold">{name}</span>
                               </p>
                               {ev.playerName && (
-                                <p className="text-xs text-slate-300 font-medium mt-0.5">👤 {ev.playerName}</p>
+                                <p className="text-xs text-slate-300 font-medium mt-0.5">Player: {ev.playerName}</p>
                               )}
                               {ev.assistPlayerName && (
-                                <p className="text-xs text-slate-400 font-medium">👟 Assist: {ev.assistPlayerName}</p>
+                                <p className="text-xs text-slate-400 font-medium">Assist: {ev.assistPlayerName}</p>
                               )}
                               {ev.description && (
-                                <p className="text-xs text-cyan-400/90 italic mt-0.5">📝 {ev.description}</p>
+                                <p className="text-xs text-cyan-400/90 italic mt-0.5">Note: {ev.description}</p>
                               )}
                             </div>
                           </div>
 
                           <button
                             onClick={() => handleDeleteEvent(ev.id)}
-                            className="text-xs text-red-400 hover:text-red-300 font-semibold px-2 py-1 rounded bg-red-950/30 hover:bg-red-900/50 transition-all"
+                            className="text-xs text-red-400 hover:text-red-300 font-semibold px-2 py-1 rounded-md bg-red-950/30 hover:bg-red-900/50 transition-all cursor-pointer"
                           >
                             Undo
                           </button>

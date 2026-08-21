@@ -47,68 +47,68 @@ export default function KabaddiConsole({ match, liveData, onEventAdded }: Kabadd
   }
 
   return (
-    <div className="rounded-2xl border border-slate-800 bg-slate-900/90 p-5 space-y-6 shadow-xl">
+    <div className="rounded-md border border-slate-800 bg-slate-900/90 p-5 space-y-6 shadow-xl">
       <div className="flex items-center justify-between border-b border-slate-800 pb-3">
         <h3 className="text-lg font-bold text-amber-400 flex items-center gap-2">
-          <span>🤼</span> Kabaddi Scorer Console
+          Kabaddi Scorer Console
         </h3>
         <select
           value={currentTeamId}
           onChange={(e) => setTeamId(e.target.value)}
-          className="rounded-xl border border-slate-700 bg-slate-950 px-3 py-1.5 text-xs font-bold text-white focus:outline-none focus:ring-2 focus:ring-amber-500"
+          className="rounded-md border border-slate-700 bg-slate-950 px-3 py-1.5 text-xs font-bold text-white focus:outline-none focus:ring-2 focus:ring-amber-500"
         >
           <option value={teamAId}>Team: {teamAName}</option>
           <option value={teamBId}>Team: {teamBName}</option>
         </select>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
         <button
           onClick={() => handleAddKabaddiEvent("touch_point", 1, "Raid Point")}
           disabled={loading}
-          className="rounded-xl bg-slate-800 hover:bg-amber-600 text-white font-extrabold py-3 text-sm transition-all shadow-md active:scale-95 disabled:opacity-50"
+          className="rounded-md bg-slate-800 hover:bg-amber-600 text-white font-extrabold py-2.5 sm:py-3 text-xs sm:text-sm transition-all shadow-md active:scale-95 disabled:opacity-50 cursor-pointer min-h-[44px]"
         >
-          🏃 Raid Point (+1)
+          Raid Point (+1)
         </button>
 
         <button
           onClick={() => handleAddKabaddiEvent("tackle", 1, "Tackle Point")}
           disabled={loading}
-          className="rounded-xl bg-slate-800 hover:bg-amber-600 text-white font-extrabold py-3 text-sm transition-all shadow-md active:scale-95 disabled:opacity-50"
+          className="rounded-md bg-slate-800 hover:bg-amber-600 text-white font-extrabold py-2.5 sm:py-3 text-xs sm:text-sm transition-all shadow-md active:scale-95 disabled:opacity-50 cursor-pointer min-h-[44px]"
         >
-          🤼 Tackle Point (+1)
+          Tackle Point (+1)
         </button>
 
         <button
           onClick={() => handleAddKabaddiEvent("bonus_point", 1, "Bonus Point")}
           disabled={loading}
-          className="rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-extrabold py-3 text-sm transition-all shadow-md active:scale-95 disabled:opacity-50"
+          className="rounded-md bg-amber-600 hover:bg-amber-500 text-white font-extrabold py-2.5 sm:py-3 text-xs sm:text-sm transition-all shadow-md active:scale-95 disabled:opacity-50 cursor-pointer min-h-[44px]"
         >
-          ⭐ Bonus Point (+1)
+          Bonus Point (+1)
         </button>
 
         <button
           onClick={() => handleAddKabaddiEvent("super_raid", 3, "SUPER RAID")}
           disabled={loading}
-          className="rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-extrabold py-3 text-sm transition-all shadow-md active:scale-95 disabled:opacity-50"
+          className="rounded-md bg-cyan-600 hover:bg-cyan-500 text-white font-extrabold py-2.5 sm:py-3 text-xs sm:text-sm transition-all shadow-md active:scale-95 disabled:opacity-50 cursor-pointer min-h-[44px]"
         >
-          ⚡ Super Raid (+3)
+          Super Raid (+3)
         </button>
 
         <button
           onClick={() => handleAddKabaddiEvent("super_tackle", 2, "SUPER TACKLE")}
           disabled={loading}
-          className="rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-extrabold py-3 text-sm transition-all shadow-md active:scale-95 disabled:opacity-50"
+          className="rounded-md bg-purple-600 hover:bg-purple-500 text-white font-extrabold py-2.5 sm:py-3 text-xs sm:text-sm transition-all shadow-md active:scale-95 disabled:opacity-50 cursor-pointer min-h-[44px]"
         >
-          💪 Super Tackle (+2)
+          Super Tackle (+2)
         </button>
 
         <button
           onClick={() => handleAddKabaddiEvent("all_out", 2, "ALL OUT")}
           disabled={loading}
-          className="rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-extrabold py-3 text-sm transition-all shadow-md active:scale-95 disabled:opacity-50"
+          className="rounded-md bg-rose-600 hover:bg-rose-500 text-white font-extrabold py-2.5 sm:py-3 text-xs sm:text-sm transition-all shadow-md active:scale-95 disabled:opacity-50 cursor-pointer min-h-[44px]"
         >
-          💥 ALL OUT (+2)
+          ALL OUT (+2)
         </button>
       </div>
 
@@ -119,7 +119,7 @@ export default function KabaddiConsole({ match, liveData, onEventAdded }: Kabadd
           placeholder="e.g. Pardeep Narwal"
           value={raiderName}
           onChange={(e) => setRaiderName(e.target.value)}
-          className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-amber-500"
+          className="w-full rounded-md border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-amber-500"
         />
       </div>
     </div>

@@ -150,19 +150,19 @@ export default function CricketConsole({ match, liveData, onEventAdded }: Cricke
   const totalOvers = match?.totalOvers || liveData?.totalOvers || (match as any)?.totalOvers || 20;
 
   return (
-    <div className="rounded-2xl border border-slate-800 bg-slate-900/90 p-5 space-y-6 shadow-xl">
+    <div className="rounded-md border border-slate-800 bg-slate-900/90 p-5 space-y-6 shadow-xl">
       {/* Header Bar */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between border-b border-slate-800 pb-3 gap-3">
         <h3 className="text-lg font-bold text-cyan-400 flex items-center gap-2">
-          <span>🏏</span> Cricket Scorer Console
-          <span className="text-xs font-mono font-bold text-cyan-300 bg-cyan-950 px-2.5 py-0.5 rounded-full border border-cyan-500/30">
+          Cricket Scorer Console
+          <span className="text-xs font-mono font-bold text-cyan-300 bg-cyan-950 px-2.5 py-0.5 rounded-md border border-cyan-500/30">
             {totalOvers} Overs Match
           </span>
         </h3>
 
         <div className="flex flex-wrap items-center gap-2.5 w-full sm:w-auto">
           {/* Batting Team Selection Guard */}
-          <div className="flex items-center gap-1.5 bg-slate-950 px-2.5 py-1 rounded-xl border border-slate-800">
+          <div className="flex items-center gap-1.5 bg-slate-950 px-2.5 py-1 rounded-md border border-slate-800">
             <span className="text-[11px] font-bold text-slate-400">Batting:</span>
             <select
               value={activeBattingId}
@@ -182,10 +182,10 @@ export default function CricketConsole({ match, liveData, onEventAdded }: Cricke
             type="button"
             onClick={() => handleAddCricketAction("change_innings", 0, false, "Innings Changed")}
             disabled={loading}
-            className="rounded-xl bg-purple-950/80 hover:bg-purple-800 border border-purple-500/40 px-3 py-1.5 text-xs font-extrabold text-purple-300 hover:text-white transition-all shadow-sm active:scale-95 disabled:opacity-50 flex items-center gap-1"
+            className="rounded-md bg-purple-950/80 hover:bg-purple-800 border border-purple-500/40 px-3 py-1.5 text-xs font-extrabold text-purple-300 hover:text-white transition-all shadow-sm active:scale-95 disabled:opacity-50 flex items-center gap-1 cursor-pointer"
             title="Switch Batting / Bowling Innings"
           >
-            <span>🔄 Switch Innings</span>
+            Switch Innings
           </button>
         </div>
       </div>
@@ -193,12 +193,12 @@ export default function CricketConsole({ match, liveData, onEventAdded }: Cricke
       {/* Main Run Scoring Grid */}
       <div className="space-y-2">
         <label className="block text-xs font-bold text-slate-400">Quick Runs & Wicket (Out)</label>
-        <div className="grid grid-cols-4 sm:grid-cols-7 gap-2 sm:gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-2 sm:gap-3">
           <button
             type="button"
             onClick={() => handleAddCricketAction("run", 0, false)}
             disabled={loading}
-            className="rounded-xl bg-slate-800 hover:bg-cyan-600 text-white font-extrabold py-3 text-sm transition-all shadow-md active:scale-95 disabled:opacity-50"
+            className="rounded-md bg-slate-800 hover:bg-cyan-600 text-white font-extrabold py-2.5 sm:py-3 text-xs sm:text-sm transition-all shadow-md active:scale-95 disabled:opacity-50 cursor-pointer min-h-[44px]"
           >
             0 (Dot)
           </button>
@@ -207,7 +207,7 @@ export default function CricketConsole({ match, liveData, onEventAdded }: Cricke
             type="button"
             onClick={() => handleAddCricketAction("run", 1, false)}
             disabled={loading}
-            className="rounded-xl bg-slate-800 hover:bg-cyan-600 text-white font-extrabold py-3 text-sm transition-all shadow-md active:scale-95 disabled:opacity-50"
+            className="rounded-md bg-slate-800 hover:bg-cyan-600 text-white font-extrabold py-2.5 sm:py-3 text-xs sm:text-sm transition-all shadow-md active:scale-95 disabled:opacity-50 cursor-pointer min-h-[44px]"
           >
             +1 Run
           </button>
@@ -216,7 +216,7 @@ export default function CricketConsole({ match, liveData, onEventAdded }: Cricke
             type="button"
             onClick={() => handleAddCricketAction("run", 2, false)}
             disabled={loading}
-            className="rounded-xl bg-slate-800 hover:bg-cyan-600 text-white font-extrabold py-3 text-sm transition-all shadow-md active:scale-95 disabled:opacity-50"
+            className="rounded-md bg-slate-800 hover:bg-cyan-600 text-white font-extrabold py-2.5 sm:py-3 text-xs sm:text-sm transition-all shadow-md active:scale-95 disabled:opacity-50 cursor-pointer min-h-[44px]"
           >
             +2 Runs
           </button>
@@ -225,7 +225,7 @@ export default function CricketConsole({ match, liveData, onEventAdded }: Cricke
             type="button"
             onClick={() => handleAddCricketAction("run", 3, false)}
             disabled={loading}
-            className="rounded-xl bg-slate-800 hover:bg-cyan-600 text-white font-extrabold py-3 text-sm transition-all shadow-md active:scale-95 disabled:opacity-50"
+            className="rounded-md bg-slate-800 hover:bg-cyan-600 text-white font-extrabold py-2.5 sm:py-3 text-xs sm:text-sm transition-all shadow-md active:scale-95 disabled:opacity-50 cursor-pointer min-h-[44px]"
           >
             +3 Runs
           </button>
@@ -234,27 +234,27 @@ export default function CricketConsole({ match, liveData, onEventAdded }: Cricke
             type="button"
             onClick={() => handleAddCricketAction("run", 4, false)}
             disabled={loading}
-            className="rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black py-3 text-sm transition-all shadow-md active:scale-95 disabled:opacity-50"
+            className="rounded-md bg-emerald-600 hover:bg-emerald-500 text-white font-black py-2.5 sm:py-3 text-xs sm:text-sm transition-all shadow-md active:scale-95 disabled:opacity-50 cursor-pointer min-h-[44px]"
           >
-            4️⃣ FOUR
+            4 (FOUR)
           </button>
 
           <button
             type="button"
             onClick={() => handleAddCricketAction("run", 6, false)}
             disabled={loading}
-            className="rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-black py-3 text-sm transition-all shadow-md active:scale-95 disabled:opacity-50"
+            className="rounded-md bg-cyan-600 hover:bg-cyan-500 text-white font-black py-2.5 sm:py-3 text-xs sm:text-sm transition-all shadow-md active:scale-95 disabled:opacity-50 cursor-pointer min-h-[44px]"
           >
-            6️⃣ SIX!
+            6 (SIX!)
           </button>
 
           <button
             type="button"
             onClick={() => handleAddCricketAction("wicket", 0, true)}
             disabled={loading}
-            className="rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-black py-3 text-sm transition-all shadow-md active:scale-95 disabled:opacity-50 col-span-2 sm:col-span-1"
+            className="rounded-md bg-rose-600 hover:bg-rose-500 text-white font-black py-2.5 sm:py-3 text-xs sm:text-sm transition-all shadow-md active:scale-95 disabled:opacity-50 col-span-2 sm:col-span-1 cursor-pointer min-h-[44px]"
           >
-            🔴 OUT!
+            OUT!
           </button>
         </div>
       </div>
@@ -267,36 +267,36 @@ export default function CricketConsole({ match, liveData, onEventAdded }: Cricke
             type="button"
             onClick={() => handleAddCricketAction("wide", 1, false, "Wide Ball")}
             disabled={loading}
-            className="rounded-xl bg-amber-600/30 hover:bg-amber-600 text-amber-300 hover:text-white font-bold py-2 text-xs transition-all border border-amber-500/40"
+            className="rounded-md bg-amber-600/30 hover:bg-amber-600 text-amber-300 hover:text-white font-bold py-2 text-xs transition-all border border-amber-500/40 cursor-pointer"
           >
-            ➕ Wide (+1)
+            Wide (+1)
           </button>
 
           <button
             type="button"
             onClick={() => handleAddCricketAction("no_ball", 1, false, "No Ball")}
             disabled={loading}
-            className="rounded-xl bg-amber-600/30 hover:bg-amber-600 text-amber-300 hover:text-white font-bold py-2 text-xs transition-all border border-amber-500/40"
+            className="rounded-md bg-amber-600/30 hover:bg-amber-600 text-amber-300 hover:text-white font-bold py-2 text-xs transition-all border border-amber-500/40 cursor-pointer"
           >
-            ➕ No Ball (+1)
+            No Ball (+1)
           </button>
 
           <button
             type="button"
             onClick={() => handleAddCricketAction("bye", 1, false, "Bye Run")}
             disabled={loading}
-            className="rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-2 text-xs transition-all border border-slate-700"
+            className="rounded-md bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-2 text-xs transition-all border border-slate-700 cursor-pointer"
           >
-            ➕ Bye (+1)
+            Bye (+1)
           </button>
 
           <button
             type="button"
             onClick={() => handleAddCricketAction("leg_bye", 1, false, "Leg Bye Run")}
             disabled={loading}
-            className="rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-2 text-xs transition-all border border-slate-700"
+            className="rounded-md bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-2 text-xs transition-all border border-slate-700 cursor-pointer"
           >
-            ➕ Leg Bye (+1)
+            Leg Bye (+1)
           </button>
         </div>
       </div>
@@ -310,7 +310,7 @@ export default function CricketConsole({ match, liveData, onEventAdded }: Cricke
             placeholder="e.g. Virat Kohli"
             value={playerName}
             onChange={(e) => setPlayerName(e.target.value)}
-            className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
+            className="w-full rounded-md border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
           />
         </div>
 
@@ -321,7 +321,7 @@ export default function CricketConsole({ match, liveData, onEventAdded }: Cricke
             placeholder="e.g. Jasprit Bumrah"
             value={bowlerName}
             onChange={(e) => setBowlerName(e.target.value)}
-            className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
+            className="w-full rounded-md border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
           />
         </div>
 
@@ -332,7 +332,7 @@ export default function CricketConsole({ match, liveData, onEventAdded }: Cricke
             placeholder="e.g. Cover drive to boundary"
             value={note}
             onChange={(e) => setNote(e.target.value)}
-            className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
+            className="w-full rounded-md border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
           />
         </div>
       </div>

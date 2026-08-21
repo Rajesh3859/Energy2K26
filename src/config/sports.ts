@@ -21,10 +21,10 @@ export const SPORTS: Record<string, SportDefinition> = {
     supportsTimer: true,
     supportsEvents: true,
     eventTypes: [
-      { type: "goal", label: "Goal", icon: "⚽" },
-      { type: "yellow_card", label: "Yellow Card", icon: "🟨" },
-      { type: "red_card", label: "Red Card", icon: "🟥" },
-      { type: "substitution", label: "Substitution", icon: "🔄" },
+      { type: "goal", label: "Goal", icon: "GOAL" },
+      { type: "yellow_card", label: "Yellow Card", icon: "YC" },
+      { type: "red_card", label: "Red Card", icon: "RC" },
+      { type: "substitution", label: "Substitution", icon: "SUB" },
     ],
   },
 
@@ -37,11 +37,11 @@ export const SPORTS: Record<string, SportDefinition> = {
     supportsTimer: false,
     supportsEvents: true,
     eventTypes: [
-      { type: "run", label: "Runs Scored", icon: "🏏" },
-      { type: "boundary_4", label: "FOUR (4)", icon: "4️⃣" },
-      { type: "boundary_6", label: "SIX (6)", icon: "6️⃣" },
-      { type: "wicket", label: "Wicket", icon: "🔴" },
-      { type: "extra", label: "Extra (Wide/No Ball)", icon: "➕" },
+      { type: "run", label: "Runs Scored", icon: "RUN" },
+      { type: "boundary_4", label: "FOUR (4)", icon: "4" },
+      { type: "boundary_6", label: "SIX (6)", icon: "6" },
+      { type: "wicket", label: "Wicket", icon: "W" },
+      { type: "extra", label: "Extra (Wide/No Ball)", icon: "EXT" },
     ],
   },
 
@@ -55,12 +55,12 @@ export const SPORTS: Record<string, SportDefinition> = {
     supportsTimer: true,
     supportsEvents: true,
     eventTypes: [
-      { type: "raid_point", label: "Raid Point", icon: "🏃" },
-      { type: "tackle_point", label: "Tackle Point", icon: "🤼" },
-      { type: "super_raid", label: "Super Raid", icon: "⚡" },
-      { type: "super_tackle", label: "Super Tackle", icon: "💪" },
-      { type: "all_out", label: "All Out (+2)", icon: "💥" },
-      { type: "bonus_point", label: "Bonus Point", icon: "⭐" },
+      { type: "raid_point", label: "Raid Point", icon: "RAID" },
+      { type: "tackle_point", label: "Tackle Point", icon: "TKL" },
+      { type: "super_raid", label: "Super Raid", icon: "S-RAID" },
+      { type: "super_tackle", label: "Super Tackle", icon: "S-TKL" },
+      { type: "all_out", label: "All Out (+2)", icon: "ALL OUT" },
+      { type: "bonus_point", label: "Bonus Point", icon: "BONUS" },
     ],
   },
 
@@ -74,11 +74,11 @@ export const SPORTS: Record<string, SportDefinition> = {
     supportsTimer: true,
     supportsEvents: true,
     eventTypes: [
-      { type: "point_1", label: "Free Throw (+1)", icon: "🎯" },
-      { type: "point_2", label: "Field Goal (+2)", icon: "🏀" },
-      { type: "point_3", label: "3-Pointer (+3)", icon: "🔥" },
-      { type: "foul", label: "Foul", icon: "⚠️" },
-      { type: "timeout", label: "Timeout", icon: "⏱️" },
+      { type: "point_1", label: "Free Throw (+1)", icon: "+1" },
+      { type: "point_2", label: "Field Goal (+2)", icon: "+2" },
+      { type: "point_3", label: "3-Pointer (+3)", icon: "+3" },
+      { type: "foul", label: "Foul", icon: "FOUL" },
+      { type: "timeout", label: "Timeout", icon: "T/O" },
     ],
   },
 
@@ -91,9 +91,9 @@ export const SPORTS: Record<string, SportDefinition> = {
     supportsTimer: false,
     supportsEvents: true,
     eventTypes: [
-      { type: "set_point", label: "Rally Point (+1)", icon: "🏐" },
-      { type: "ace", label: "Service Ace", icon: "⚡" },
-      { type: "block", label: "Block Point", icon: "🛡️" },
+      { type: "set_point", label: "Rally Point (+1)", icon: "+1" },
+      { type: "ace", label: "Service Ace", icon: "ACE" },
+      { type: "block", label: "Block Point", icon: "BLK" },
     ],
   },
 
@@ -106,8 +106,8 @@ export const SPORTS: Record<string, SportDefinition> = {
     supportsTimer: false,
     supportsEvents: true,
     eventTypes: [
-      { type: "game_point", label: "Point (+1)", icon: "🏓" },
-      { type: "ace", label: "Service Winner", icon: "⚡" },
+      { type: "game_point", label: "Point (+1)", icon: "+1" },
+      { type: "ace", label: "Service Winner", icon: "ACE" },
     ],
   },
 
@@ -120,8 +120,8 @@ export const SPORTS: Record<string, SportDefinition> = {
     supportsTimer: false,
     supportsEvents: true,
     eventTypes: [
-      { type: "rally_point", label: "Rally Point (+1)", icon: "🏸" },
-      { type: "smash", label: "Smash Winner", icon: "💥" },
+      { type: "rally_point", label: "Rally Point (+1)", icon: "+1" },
+      { type: "smash", label: "Smash Winner", icon: "SMSH" },
     ],
   },
 };

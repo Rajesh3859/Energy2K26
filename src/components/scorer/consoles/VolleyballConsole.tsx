@@ -20,46 +20,55 @@ export default function VolleyballConsole({ match, liveData, onEventAdded }: Vol
   const teamAId = liveData?.teamA?.teamId || match?.teamA?.id || "teamA";
   const teamBId = liveData?.teamB?.teamId || match?.teamB?.id || "teamB";
 
-  const initialScoreA = liveData?.teamA?.score ?? liveData?.scoreTeamA ?? match?.scoreTeamA ?? match?.teamA?.score ?? 0;
-  const initialScoreB = liveData?.teamB?.score ?? liveData?.scoreTeamB ?? match?.scoreTeamB ?? match?.teamB?.score ?? 0;
+  const initialSetsA = liveData?.setsWonTeamA ?? liveData?.volleyballScore?.setsWonTeamA ?? liveData?.teamA?.score ?? liveData?.scoreTeamA ?? match?.scoreTeamA ?? 0;
+  const initialSetsB = liveData?.setsWonTeamB ?? liveData?.volleyballScore?.setsWonTeamB ?? liveData?.teamB?.score ?? liveData?.scoreTeamB ?? match?.scoreTeamB ?? 0;
 
-  const [scoreA, setScoreA] = useState<number>(initialScoreA);
-  const [scoreB, setScoreB] = useState<number>(initialScoreB);
+  const [setsA, setSetsA] = useState<number>(initialSetsA);
+  const [setsB, setSetsB] = useState<number>(initialSetsB);
+  const [curPtsA, setCurPtsA] = useState<number>(liveData?.currentSetTeamA ?? liveData?.volleyballScore?.currentSetTeamA ?? 0);
+  const [curPtsB, setCurPtsB] = useState<number>(liveData?.currentSetTeamB ?? liveData?.volleyballScore?.currentSetTeamB ?? 0);
+  const [currentSet, setCurrentSet] = useState<number>(liveData?.currentSet ?? liveData?.volleyballScore?.currentSet ?? 1);
 
   useEffect(() => {
-    if (typeof liveData?.teamA?.score === "number") setScoreA(liveData.teamA.score);
-    else if (typeof liveData?.scoreTeamA === "number") setScoreA(liveData.scoreTeamA);
+    const vb = liveData?.volleyballScore || liveData;
+    if (typeof vb?.setsWonTeamA === "number") setSetsA(vb.setsWonTeamA);
+    else if (typeof liveData?.teamA?.score === "number") setSetsA(liveData.teamA.score);
 
-    if (typeof liveData?.teamB?.score === "number") setScoreB(liveData.teamB.score);
-    else if (typeof liveData?.scoreTeamB === "number") setScoreB(liveData.scoreTeamB);
+    if (typeof vb?.setsWonTeamB === "number") setSetsB(vb.setsWonTeamB);
+    else if (typeof liveData?.teamB?.score === "number") setSetsB(liveData.teamB.score);
+
+    if (typeof vb?.currentSetTeamA === "number") setCurPtsA(vb.currentSetTeamA);
+    if (typeof vb?.currentSetTeamB === "number") setCurPtsB(vb.currentSetTeamB);
+    if (typeof vb?.currentSet === "number") setCurrentSet(vb.currentSet);
   }, [liveData]);
 
   const currentTeamId = teamId || teamAId;
 
-  async function handleAddPoint(targetTeamId: string) {
+  async function handleAddPoint(targetTeamId: string, actionType = "POINT") {
     const isTeamA = targetTeamId === teamAId;
-    const prevScoreA = scoreA;
-    const prevScoreB = scoreB;
+    const tName = isTeamA ? teamAName : teamBName;
 
-    // ⚡ Instant Optimistic UI Update (0ms delay)
-    if (isTeamA) setScoreA((prev) => prev + 1);
-    else setScoreB((prev) => prev + 1);
+    // ⚡ Instant Optimistic UI Update (0ms delay) for Set Points
+    if (isTeamA) setCurPtsA((prev) => prev + 1);
+    else setCurPtsB((prev) => prev + 1);
 
     setLoading(true);
 
     try {
-      const data = await volleyballAction(matchId, targetTeamId, 1);
+      const data = await volleyballAction(matchId, {
+        teamId: targetTeamId,
+        type: actionType,
+        points: 1,
+        playerName: playerName || "Player",
+        teamName: tName,
+      });
 
-      // Reconcile with exact backend/RTDB scores if provided
-      if (data && typeof data.scoreA === "number") setScoreA(data.scoreA);
-      if (data && typeof data.scoreB === "number") setScoreB(data.scoreB);
+      if (data && typeof data.scoreA === "number") setSetsA(data.scoreA);
+      if (data && typeof data.scoreB === "number") setSetsB(data.scoreB);
 
       setPlayerName("");
       if (onEventAdded) onEventAdded();
     } catch (err: any) {
-      // Revert optimistic update on failure
-      setScoreA(prevScoreA);
-      setScoreB(prevScoreB);
       alert(err.message || "Failed to record Volleyball event");
     } finally {
       setLoading(false);
@@ -67,33 +76,34 @@ export default function VolleyballConsole({ match, liveData, onEventAdded }: Vol
   }
 
   return (
-    <div className="rounded-2xl border border-slate-800 bg-slate-900/90 p-5 space-y-6 shadow-xl">
+    <div className="rounded-md border border-slate-800 bg-slate-900/90 p-5 space-y-6 shadow-xl">
       {/* Header & Scores */}
-      <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+      <div className="flex flex-wrap items-center justify-between border-b border-slate-800 pb-3 gap-2">
         <h3 className="text-lg font-bold text-sky-400 flex items-center gap-2">
-          <span>🏐</span> Volleyball Scorer Console
+          Volleyball Scorer Console
         </h3>
-        <div className="flex items-center gap-4 text-sm font-bold">
-          <span className="text-slate-300">{teamAName}: <span className="text-sky-400 text-base">{scoreA}</span></span>
-          <span className="text-slate-500">|</span>
-          <span className="text-slate-300">{teamBName}: <span className="text-slate-300 text-base">{scoreB}</span></span>
+        <div className="flex items-center gap-3 text-xs font-bold bg-slate-950 px-3 py-1.5 rounded-md border border-slate-800">
+          <span className="text-slate-300">{teamAName}: <span className="text-sky-400 text-sm">{setsA} Sets</span> ({curPtsA} pts)</span>
+          <span className="text-slate-600">|</span>
+          <span className="text-slate-300">{teamBName}: <span className="text-sky-400 text-sm">{setsB} Sets</span> ({curPtsB} pts)</span>
+          <span className="text-xs text-amber-400 font-mono ml-1">[Set {currentSet}]</span>
         </div>
       </div>
 
       {/* Main +1 Buttons */}
       <div className="grid grid-cols-2 gap-4">
         <button
-          onClick={() => handleAddPoint(teamAId)}
+          onClick={() => handleAddPoint(teamAId, "POINT")}
           disabled={loading}
-          className="rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-extrabold py-3 text-base transition-all shadow-md active:scale-95 disabled:opacity-50"
+          className="rounded-md bg-sky-600 hover:bg-sky-500 text-white font-extrabold py-3 text-base transition-all shadow-md active:scale-95 disabled:opacity-50 cursor-pointer"
         >
           +1 {teamAName}
         </button>
 
         <button
-          onClick={() => handleAddPoint(teamBId)}
+          onClick={() => handleAddPoint(teamBId, "POINT")}
           disabled={loading}
-          className="rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold py-3 text-base transition-all shadow-md active:scale-95 disabled:opacity-50"
+          className="rounded-md bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold py-3 text-base transition-all shadow-md active:scale-95 disabled:opacity-50 cursor-pointer"
         >
           +1 {teamBName}
         </button>
@@ -106,7 +116,7 @@ export default function VolleyballConsole({ match, liveData, onEventAdded }: Vol
           <select
             value={currentTeamId}
             onChange={(e) => setTeamId(e.target.value)}
-            className="rounded-xl border border-slate-700 bg-slate-950 px-3 py-1.5 text-xs font-bold text-white focus:outline-none focus:ring-2 focus:ring-sky-500"
+            className="rounded-md border border-slate-700 bg-slate-950 px-3 py-1.5 text-xs font-bold text-white focus:outline-none focus:ring-2 focus:ring-sky-500"
           >
             <option value={teamAId}>{teamAName}</option>
             <option value={teamBId}>{teamBName}</option>
@@ -115,27 +125,27 @@ export default function VolleyballConsole({ match, liveData, onEventAdded }: Vol
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <button
-            onClick={() => handleAddPoint(currentTeamId)}
+            onClick={() => handleAddPoint(currentTeamId, "RALLY_POINT")}
             disabled={loading}
-            className="rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-extrabold py-2.5 text-xs transition-all shadow-md active:scale-95 disabled:opacity-50"
+            className="rounded-md bg-slate-800 hover:bg-slate-700 text-white font-extrabold py-2.5 text-xs transition-all shadow-md active:scale-95 disabled:opacity-50 cursor-pointer"
           >
-            🏐 Rally Point (+1)
+            Rally Point (+1)
           </button>
 
           <button
-            onClick={() => handleAddPoint(currentTeamId)}
+            onClick={() => handleAddPoint(currentTeamId, "SERVICE_ACE")}
             disabled={loading}
-            className="rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-extrabold py-2.5 text-xs transition-all shadow-md active:scale-95 disabled:opacity-50"
+            className="rounded-md bg-slate-800 hover:bg-slate-700 text-white font-extrabold py-2.5 text-xs transition-all shadow-md active:scale-95 disabled:opacity-50 cursor-pointer"
           >
-            ⚡ Service Ace (+1)
+            Service Ace (+1)
           </button>
 
           <button
-            onClick={() => handleAddPoint(currentTeamId)}
+            onClick={() => handleAddPoint(currentTeamId, "BLOCK_POINT")}
             disabled={loading}
-            className="rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-extrabold py-2.5 text-xs transition-all shadow-md active:scale-95 disabled:opacity-50"
+            className="rounded-md bg-slate-800 hover:bg-slate-700 text-white font-extrabold py-2.5 text-xs transition-all shadow-md active:scale-95 disabled:opacity-50 cursor-pointer"
           >
-            🛡️ Block Point (+1)
+            Block Point (+1)
           </button>
         </div>
       </div>
@@ -147,9 +157,10 @@ export default function VolleyballConsole({ match, liveData, onEventAdded }: Vol
           placeholder="e.g. Yuji Nishida"
           value={playerName}
           onChange={(e) => setPlayerName(e.target.value)}
-          className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-sky-500"
+          className="w-full rounded-md border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-sky-500"
         />
       </div>
     </div>
   );
 }
+
